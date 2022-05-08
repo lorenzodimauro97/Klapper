@@ -45,7 +45,7 @@
             <h2 class="text-primary">Temperature Chart</h2>
         </div>
 
-        <TemperatureChart Sensors="HeaterComponents"></TemperatureChart>
+        <TemperatureChart Sensors="_heaterComponents"></TemperatureChart>
 
     </div>
 }
@@ -67,11 +67,11 @@
     bool KlipperIsRunning { get; set; }
     bool KlipperIsInitialized { get; set; }
     List<string> Heaters { get; set; }
-    private readonly List<ProductCard> HeaterComponents = new();
+    private readonly List<ProductCard> _heaterComponents = new();
 
     public ProductCard HeaterComponent
     {
-        set => HeaterComponents.Add(value);
+        set => _heaterComponents.Add(value);
     }
 
     List<string> Sensors { get; set; }

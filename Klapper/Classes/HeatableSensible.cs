@@ -7,7 +7,7 @@ public class HeatableSensible
     public double power { get; set; }
     public bool can_extrude { get; set; }
     public double smooth_time { get; set; }
-    public double? temperature { get; set; }
+    public double temperature { get; set; }
     public double measured_min_temp { get; set; }
     public double measured_max_temp { get; set; }
 
@@ -24,8 +24,16 @@ public class Temperature
 {
     public Temperature(HeatableSensible heatableSensible)
     {
-        temperature = heatableSensible.temperature ?? 0;
-        Date = heatableSensible.Date;
+        if (heatableSensible == null)
+        {
+            temperature = 0;
+            Date = DateTime.Now;
+        }
+        else
+        {
+            temperature = heatableSensible.temperature;
+            Date = heatableSensible.Date;
+        }
     }
 
     public Temperature()

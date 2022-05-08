@@ -76,7 +76,8 @@
         foreach (var sensor in Sensors.Where(sensor => Temperatures.Any(x => x.Item1 == sensor.Name)))
         {
             var temperature = Temperatures.First(x => x.Item1 == sensor.Name);
-            temperature.Item3 = $"{temperature.Item1}: {sensor.data.temperature:n3}";
+            if (sensor != null && sensor.data != null && sensor.data.temperature != null)
+                temperature.Item3 = $"{temperature.Item1}: {sensor.data.temperature:n3}";
 
             temperature.Item2.Add(new Temperature(sensor.data));
 

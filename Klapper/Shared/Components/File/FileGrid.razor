@@ -5,27 +5,30 @@
 @inject DialogService DialogService
 
 <RadzenButton Text="Refresh" Click="@RefreshData" Style="margin-bottom: 10px;"/>
-<RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" FilterMode="FilterMode.Advanced" AllowSorting="true" so
-                Data="@_gCodeFiles" TItem="GCodeFile" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or" RowSelect="ShowInlineDialog">
-    <Columns>
-        <RadzenDataGridColumn TItem="GCodeFile" Property="path" Title="GCode File Name" Frozen="true" Width="140px"/>
-        <RadzenDataGridColumn TItem="GCodeFile" Property="size" Title="Size" Width="140px">
-            <Template Context="data">
-                <div>@(data.size / 1000) KB</div>
-            </Template>
-        </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="GCodeFile" Property="modified" Title="Last Modified" Width="200px">
-            <Template Context="data">
-                <div>@(DateTime.UnixEpoch.AddSeconds(data.modified))</div>
-            </Template>
-        </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="GCodeFile" Property="permissions" Title="System Permissions" Width="100px"/>
-    </Columns>
-</RadzenDataGrid>
+
+@if (GCodeFiles?.Count > 0)
+{
+    <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" FilterMode="FilterMode.Advanced" AllowSorting="true"
+                    Data="@GCodeFiles" TItem="GCodeFileDetails" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or" RowSelect="ShowInlineDialog">
+        <Columns>
+            <RadzenDataGridColumn TItem="GCodeFileDetails" Property="filename" Title="GCode File Name" Frozen="true" Width="140px"/>
+            <RadzenDataGridColumn TItem="GCodeFileDetails" Property="size" Title="Size" Width="140px">
+                <Template Context="data">
+                    <div>@(data.size / 1000) KB</div>
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="GCodeFileDetails" Property="modified" Title="Last Modified" Width="200px">
+                <Template Context="data">
+                    <div>@(DateTime.UnixEpoch.AddSeconds(data.modified))</div>
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+}
 
 @code {
 
-    private List<GCodeFile> _gCodeFiles;
+    private List<GCodeFileDetails> GCodeFiles { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -35,10 +38,24 @@
 
     private async Task RefreshData()
     {
+        GCodeFiles.Clear();
         try
         {
-            _gCodeFiles = (await Api.GetFiles()).result;
-            _gCodeFiles.Sort((a, b) => b.modified.CompareTo(a.modified));
+            var gcodeTempList = (await Api.GetFiles()).result;
+            foreach (var gcodeFile in gcodeTempList)
+            {
+                var detailedGcodeFile = await Api.GetFileDetails(gcodeFile.path);
+                GCodeFiles.Add(detailedGcodeFile.result);
+            }
+            GCodeFiles.Sort((a, b) => b.modified.CompareTo(a.modified));
+
+            Toast.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Success,
+                Detail = $"Loaded {GCodeFiles.Count} files",
+                Summary = "Success",
+                Duration = 7000
+            });
         }
 
         catch (Exception)
@@ -46,21 +63,20 @@
         }
     }
 
-    private async Task ShowInlineDialog(GCodeFile file)
+    private async Task ShowInlineDialog(GCodeFileDetails file)
     {
-        var details = await Api.GetFileDetails(file.path);
-
         var result = await DialogService.OpenAsync("Print File", ds =>
-            @<FileDetails File="@details.result" 
-                          OnStartPrint ="async () => { ds.Close(true); await OnPrintFile(file);}" 
-                          OnCancel="() => ds.Close(false)"></FileDetails>, new DialogOptions(){ Width = "auto",Height = "auto" });
+            @<FileDetails File="@file"
+                          OnStartPrint="async () => { ds.Close(true); await OnPrintFile(file);}"
+                          OnCancel="() => ds.Close(false)">
+            </FileDetails>, new DialogOptions() { Width = "auto", Height = "auto" });
     }
 
-    private async Task OnPrintFile(GCodeFile file)
+    private async Task OnPrintFile(GCodeFileDetails file)
     {
         try
         {
-            var result = await Api.PrintFile(file.path);
+            var result = await Api.PrintFile(file.filename);
             Toast.Notify(new NotificationMessage
             {
                 Severity = result ? NotificationSeverity.Success : NotificationSeverity.Error,

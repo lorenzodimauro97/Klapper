@@ -49,6 +49,14 @@ public class MoonrakerApiService
         return deserializedClass;
     }
     
+    public async Task<byte[]> GetImage(string query)
+    {
+        var request = new RestRequest($"/server/files/gcodes/{query}");
+        var result = await _client.DownloadDataAsync(request);
+
+        return result;
+    }
+    
     public async Task<GCodeFileDetailsRoot> GetFileDetails(string query)
     {
         var request = new RestRequest($"/server/files/metadata?filename={query}");
