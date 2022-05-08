@@ -7,7 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>();
-builder.Services.AddSingleton<MoonrakerApiService>(x =>
+builder.Services.AddSingleton(x =>
 {
     var logger = x.GetRequiredService<ILogger<MoonrakerApiService>>();
     const string baseAddress = "http://192.168.8.125";

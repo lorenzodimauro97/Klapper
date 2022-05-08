@@ -401,8 +401,9 @@ public class Extruder
 
 public class Config
 {
-    [DataMember(Name="tmc2209 extruder")]
+    [DataMember(Name = "tmc2209 extruder")]
     public Tmc2209Extruder Tmc2209Extruder { get; set; }
+
     public PauseResume pause_resume { get; set; }
     public StepperY1 stepper_y1 { get; set; }
     public HeaterBed heater_bed { get; set; }
@@ -415,26 +416,29 @@ public class Config
     public Mcu mcu { get; set; }
     public Printer printer { get; set; }
 
-    [DataMember(Name="temperature_sensor mcu_temp")]
+    [DataMember(Name = "temperature_sensor mcu_temp")]
     public TemperatureSensorMcuTemp TemperatureSensorMcuTemp { get; set; }
+
     public Fan fan { get; set; }
 
-    [DataMember(Name="tmc2209 stepper_z")]
+    [DataMember(Name = "tmc2209 stepper_z")]
     public Tmc2209StepperZ Tmc2209StepperZ { get; set; }
 
-    [DataMember(Name="tmc2209 stepper_x")]
+    [DataMember(Name = "tmc2209 stepper_x")]
     public Tmc2209StepperX Tmc2209StepperX { get; set; }
 
-    [DataMember(Name="tmc2209 stepper_y")]
+    [DataMember(Name = "tmc2209 stepper_y")]
     public Tmc2209StepperY Tmc2209StepperY { get; set; }
+
     public BedScrews bed_screws { get; set; }
     public DisplayStatus display_status { get; set; }
 
-    [DataMember(Name="gcode_macro CANCEL_PRINT")]
+    [DataMember(Name = "gcode_macro CANCEL_PRINT")]
     public GcodeMacroCANCELPRINT GcodeMacroCANCELPRINT { get; set; }
 
-    [DataMember(Name="tmc2209 stepper_y1")]
+    [DataMember(Name = "tmc2209 stepper_y1")]
     public Tmc2209StepperY1 Tmc2209StepperY1 { get; set; }
+
     public Extruder extruder { get; set; }
 }
 
@@ -476,8 +480,9 @@ public class VerifyHeaterHeaterBed
 
 public class Settings
 {
-    [DataMember(Name="tmc2209 extruder")]
+    [DataMember(Name = "tmc2209 extruder")]
     public Tmc2209Extruder Tmc2209Extruder { get; set; }
+
     public ForceMove force_move { get; set; }
     public PauseResume pause_resume { get; set; }
 
@@ -487,8 +492,9 @@ public class Settings
     public HeaterBed heater_bed { get; set; }
     public VirtualSdcard virtual_sdcard { get; set; }
 
-    [DataMember(Name="verify_heater extruder")]
+    [DataMember(Name = "verify_heater extruder")]
     public VerifyHeaterExtruder VerifyHeaterExtruder { get; set; }
+
     public StepperZ stepper_z { get; set; }
     public StepperY stepper_y { get; set; }
     public StepperX stepper_x { get; set; }
@@ -497,26 +503,29 @@ public class Settings
     public Mcu mcu { get; set; }
     public Printer printer { get; set; }
 
-    [DataMember(Name="temperature_sensor mcu_temp")]
+    [DataMember(Name = "temperature_sensor mcu_temp")]
     public TemperatureSensorMcuTemp TemperatureSensorMcuTemp { get; set; }
+
     public IdleTimeout idle_timeout { get; set; }
     public Fan fan { get; set; }
 
-    [DataMember(Name="tmc2209 stepper_z")]
+    [DataMember(Name = "tmc2209 stepper_z")]
     public Tmc2209StepperZ Tmc2209StepperZ { get; set; }
 
-    [DataMember(Name="tmc2209 stepper_x")]
+    [DataMember(Name = "tmc2209 stepper_x")]
     public Tmc2209StepperX Tmc2209StepperX { get; set; }
 
-    [DataMember(Name="tmc2209 stepper_y")]
+    [DataMember(Name = "tmc2209 stepper_y")]
     public Tmc2209StepperY Tmc2209StepperY { get; set; }
+
     public BedScrews bed_screws { get; set; }
 
-    [DataMember(Name="verify_heater heater_bed")]
+    [DataMember(Name = "verify_heater heater_bed")]
     public VerifyHeaterHeaterBed VerifyHeaterHeaterBed { get; set; }
 
-    [DataMember(Name="tmc2209 stepper_y1")]
+    [DataMember(Name = "tmc2209 stepper_y1")]
     public Tmc2209StepperY1 Tmc2209StepperY1 { get; set; }
+
     public Extruder extruder { get; set; }
 }
 
@@ -646,8 +655,9 @@ public class Toolhead
 
 public class Status
 {
-    [DataMember(Name="tmc2209 extruder")]
+    [DataMember(Name = "tmc2209 extruder")]
     public Tmc2209Extruder Tmc2209Extruder { get; set; }
+
     public PauseResume pause_resume { get; set; }
     public Configfile configfile { get; set; }
     public QueryEndstops query_endstops { get; set; }
@@ -658,30 +668,34 @@ public class Status
     public Mcu mcu { get; set; }
     public Heaters heaters { get; set; }
 
-    [DataMember(Name="temperature_sensor mcu_temp")]
+    [DataMember(Name = "temperature_sensor mcu_temp")]
     public TemperatureSensorMcuTemp TemperatureSensorMcuTemp { get; set; }
+
     public MotionReport motion_report { get; set; }
     public SystemStats system_stats { get; set; }
     public IdleTimeout idle_timeout { get; set; }
     public Fan fan { get; set; }
 
-    [DataMember(Name="tmc2209 stepper_z")]
+    [DataMember(Name = "tmc2209 stepper_z")]
     public Tmc2209StepperZ Tmc2209StepperZ { get; set; }
 
-    [DataMember(Name="tmc2209 stepper_x")]
+    [DataMember(Name = "tmc2209 stepper_x")]
     public Tmc2209StepperX Tmc2209StepperX { get; set; }
 
-    [DataMember(Name="tmc2209 stepper_y")]
+    [DataMember(Name = "tmc2209 stepper_y")]
     public Tmc2209StepperY Tmc2209StepperY { get; set; }
+
     public DisplayStatus display_status { get; set; }
 
-    [DataMember(Name="gcode_macro CANCEL_PRINT")]
+    [DataMember(Name = "gcode_macro CANCEL_PRINT")]
     public GcodeMacroCANCELPRINT GcodeMacroCANCELPRINT { get; set; }
+
     public PrintStats print_stats { get; set; }
     public Toolhead toolhead { get; set; }
 
-    [DataMember(Name="tmc2209 stepper_y1")]
+    [DataMember(Name = "tmc2209 stepper_y1")]
     public Tmc2209StepperY1 Tmc2209StepperY1 { get; set; }
+
     public Extruder extruder { get; set; }
 }
 

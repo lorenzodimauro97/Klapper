@@ -1,15 +1,16 @@
 @using Klapper.Data
+@using System.Timers
 @inject MoonrakerApiService Api;
 
 <div class="container border p-3 mt-4" style="background-color: @StatusColor">
     <div class="panel status" style="padding-top: 20px">
-            <div class="panel-heading">
-                <h1 class="panel-title text-center">@StatusName</h1>
-            </div>
-            <div class="panel-body text-center" style="padding-top: 20px">
-                <strong>@StatusText</strong>
-            </div>
+        <div class="panel-heading">
+            <h1 class="panel-title text-center">@StatusName</h1>
         </div>
+        <div class="panel-body text-center" style="padding-top: 20px">
+            <strong>@StatusText</strong>
+        </div>
+    </div>
 </div>
 
 @code {
@@ -21,7 +22,7 @@
 
     public string StatusText { get; set; }
 
-    public string[] StatusColors = {"#E57373", "#FFEE58", "#66BB6A" };
+    public string[] StatusColors = { "#E57373", "#FFEE58", "#66BB6A" };
 
     protected override async Task OnInitializedAsync()
     {
@@ -33,7 +34,7 @@
     private void SetAutoRefresh()
     {
     // Create a timer with a two second interval.
-        var timer = new System.Timers.Timer(2000);
+        var timer = new Timer(2000);
     // Hook up the Elapsed event for the timer. 
         timer.Elapsed += async (sender, args) =>
         {
@@ -62,7 +63,9 @@
                 }
             }
         }
-        catch(Exception){}
+        catch (Exception)
+        {
+        }
     }
 
 }

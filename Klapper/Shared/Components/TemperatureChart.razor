@@ -1,4 +1,5 @@
 @using Klapper.Data
+@using System.Timers
 @inject MoonrakerApiService Api;
 
 @if (Sensors != null)
@@ -7,7 +8,7 @@
         @foreach (var sensor in Sensors.Where(sensor => Temperatures.Any(x => x.Item1 == sensor.Name)))
         {
             var temperature = Temperatures.Last(x => x.Item1 == sensor.Name);
-            
+
             <RadzenLineSeries Data="@(temperature.Item2)" CategoryProperty="Date" Title="@GetTemperature(temperature.Item1)" LineType="@LineType.Solid" ValueProperty="temperature">
                 <RadzenMarkers MarkerType="@MarkerType.None"/>
             </RadzenLineSeries>
@@ -22,7 +23,10 @@
 }
 
 @code {
-    [Parameter] public List<ProductCard> Sensors { get; set; }
+
+    [Parameter]
+    public List<ProductCard> Sensors { get; set; }
+
     private List<(string, List<Temperature>, string)> Temperatures { get; set; } = new();
 
     //public RadzenChart Chart { get; set; }
@@ -40,13 +44,13 @@
     private void InitializeChart()
     {
         Temperatures.Clear();
-        
+
         foreach (var sensor in Sensors)
         {
-            Temperatures.Add((sensor.Name, new List<Temperature> {new()}, $"{sensor.Name}: 0"));
+            Temperatures.Add((sensor.Name, new List<Temperature> { new() }, $"{sensor.Name}: 0"));
         }
     }
-    
+
     private string GetTemperature(string reference)
     {
         var temperature = Temperatures.Last(x => x.Item1 == reference);
@@ -55,13 +59,13 @@
 
     private void SetAutoRefresh()
     {
-        var timer = new System.Timers.Timer(600);
+        var timer = new Timer(600);
         timer.Elapsed += async (sender, args) =>
         {
             RefreshData();
             await InvokeAsync(StateHasChanged);
         };
-        
+
         timer.AutoReset = true;
         timer.Enabled = true;
     }
@@ -73,16 +77,16 @@
         {
             var temperature = Temperatures.First(x => x.Item1 == sensor.Name);
             temperature.Item3 = $"{temperature.Item1}: {sensor.data.temperature:n3}";
-            
+
             temperature.Item2.Add(new Temperature(sensor.data));
 
             if (FirstStart)
                 temperature.Item2.RemoveAt(0);
             else if (Temperatures.First(x => x.Item1 == sensor.Name).Item2.Count > 300)
-                temperature.Item2.RemoveRange(0,2);
+                temperature.Item2.RemoveRange(0, 2);
         }
 
         FirstStart = false;
-        return;
     }
+
 }

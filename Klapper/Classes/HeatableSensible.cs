@@ -10,18 +10,18 @@ public class HeatableSensible
     public double? temperature { get; set; }
     public double measured_min_temp { get; set; }
     public double measured_max_temp { get; set; }
-    
+
     public bool IsHeater { get; set; }
     public DateTime Date { get; set; } = DateTime.Now;
-    
-    public double GetPowerPercent() => power * 100;
+
+    public double GetPowerPercent()
+    {
+        return power * 100;
+    }
 }
 
 public class Temperature
 {
-    public double temperature { get; set; }
-    public DateTime Date { get; set; }
-
     public Temperature(HeatableSensible heatableSensible)
     {
         temperature = heatableSensible.temperature ?? 0;
@@ -33,4 +33,7 @@ public class Temperature
         temperature = 0;
         Date = DateTime.Now;
     }
+
+    public double temperature { get; set; }
+    public DateTime Date { get; set; }
 }

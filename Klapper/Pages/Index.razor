@@ -1,7 +1,9 @@
 ﻿@page "/"
 @using Klapper.Data
-@using Klapper.Classes
 @using Klapper.Shared.Components
+@using Klapper.Shared.Components.File
+@using Klapper.Classes
+@using System.Timers
 @inject MoonrakerApiService Api
 
 <PageTitle>Index</PageTitle>
@@ -65,7 +67,7 @@
     bool KlipperIsRunning { get; set; }
     bool KlipperIsInitialized { get; set; }
     List<string> Heaters { get; set; }
-    private List<ProductCard> HeaterComponents = new();
+    private readonly List<ProductCard> HeaterComponents = new();
 
     public ProductCard HeaterComponent
     {
@@ -84,7 +86,7 @@
 
     private void SetKlipperStatusTimer()
     {
-        var timer = new System.Timers.Timer(1000);
+        var timer = new Timer(1000);
         timer.Elapsed += async (sender, args) =>
         {
             await CheckKlipperStatus();

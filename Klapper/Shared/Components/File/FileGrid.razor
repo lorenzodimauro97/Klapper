@@ -45,23 +45,17 @@
         {
         }
     }
-    
+
     private async Task ShowInlineDialog(GCodeFile file)
     {
+        var details = await Api.GetFileDetails(file.path);
+
         var result = await DialogService.OpenAsync("Print File", ds =>
-            @<div>
-                <p class="mb-4">Print <b>@file.path</b>?</p>
-                <div class="row">
-                    <div class="col">
-                        <RadzenButton Text="Ok" Click="async () => { ds.Close(true); await OnPrintFile(file);}" Class="mr-1" Style="width: 80px;" />
-                        <RadzenButton Text="Cancel" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Secondary" Class="mr-1 float-right" />
-                    
-                    </div>
-                </div>
-            </div>);
-    
+            @<FileDetails File="@details.result" 
+                          OnStartPrint ="async () => { ds.Close(true); await OnPrintFile(file);}" 
+                          OnCancel="() => ds.Close(false)"></FileDetails>, new DialogOptions(){ Width = "auto",Height = "auto" });
     }
-    
+
     private async Task OnPrintFile(GCodeFile file)
     {
         try
@@ -80,4 +74,5 @@
         {
         }
     }
+
 }

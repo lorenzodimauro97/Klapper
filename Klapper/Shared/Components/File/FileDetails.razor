@@ -1,0 +1,47 @@
+@using Klapper.Classes
+
+<div class="container py-4 py-xl-5">
+    <div class="row mb-5">
+        <div class="col-md-8 col-xl-6 text-center mx-auto">
+            <h2>Print File?</h2>
+            <p class="w-lg-50">@File.filename</p>
+        </div>
+    </div>
+    <div class="row gy-4 row-cols-1 row-cols-md-2">
+        <div class="col">
+            <div class="d-flex flex-column flex-lg-row">
+                <div class="py-4 py-lg-0 px-lg-4">
+                    <p>
+                        <strong>·</strong> <strong>Printed With:</strong> @File.slicer 
+                        <br>
+                        <strong>Version</strong> @File.slicer_version
+                        <br>
+                        <br>
+                        <strong>·</strong> <strong>Estimated time to completion:</strong> @File.GetEstimatedTime()
+                        <br>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="d-flex flex-column flex-lg-row">
+                <img class="rounded img-fluid d-block w-100 fit-cover" style="height: 200px;" src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png">
+            </div>
+        </div>
+    </div>
+    <div class="row gy-4 row-cols-1 row-cols-md-2" style="padding-top: 10px;">
+                <div class="col"><button class="btn btn-danger" type="button" @onclick="OnCancel">Cancel</button></div>
+                <div class="col" style="text-align: right;"><button class="btn btn-success" type="button" @onclick="OnStartPrint">Start Printing</button></div>
+            </div>
+</div>
+
+@code
+{
+    [Parameter] public GCodeFileDetails File { get; set; }
+    [Parameter]
+    public Action OnStartPrint { get; set; }
+    [Parameter]
+
+    public Action OnCancel { get; set; }
+
+}

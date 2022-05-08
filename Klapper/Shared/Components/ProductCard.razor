@@ -1,6 +1,5 @@
-@using Klapper.Classes
 @using Klapper.Data
-@using Klapper.Shared.Components
+@using System.Timers
 @inject MoonrakerApiService Api
 @inject NotificationService Toast
 
@@ -16,8 +15,10 @@
             @if (data.IsHeater)
             {
                 <div class="card-body">
-                    <p class="card-text">Target Temperature: 
-                        <RadzenNumeric @bind-value="@data.target" TValue="double" Min="0" Max="300" Change=@(OnPowerChange) Class="w-100"/></p>
+                    <p class="card-text">
+                        Target Temperature:
+                        <RadzenNumeric @bind-value="@data.target" TValue="double" Min="0" Max="300" Change=@(OnPowerChange) Class="w-100"/>
+                    </p>
                 </div>
             }
         </div>
@@ -40,7 +41,7 @@
 
     private void SetAutoRefresh()
     {
-        var timer = new System.Timers.Timer(200);
+        var timer = new Timer(200);
         timer.Elapsed += async (sender, args) =>
         {
             await RefreshData();
@@ -56,14 +57,16 @@
         {
             data = await Api.GetISensible(Name);
         }
-        catch(Exception){}
+        catch (Exception)
+        {
+        }
     }
 
 
     private async Task OnPowerChange(double args)
     {
         var result = await Api.RunGCode($"SET_HEATER_TEMPERATURE HEATER={Name} TARGET={args}");
-        
+
         Toast.Notify(new NotificationMessage
         {
             Severity = result ? NotificationSeverity.Success : NotificationSeverity.Error,
