@@ -14,6 +14,7 @@ builder.Services.AddSingleton<MoonrakerApiService>(x =>
     return new MoonrakerApiService(logger, baseAddress);
 });
 builder.Services.AddScoped<NotificationService>();
+builder.Services.AddScoped<DialogService>();
 
 var app = builder.Build();
 

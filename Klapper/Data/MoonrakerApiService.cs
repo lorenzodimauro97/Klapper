@@ -32,6 +32,23 @@ public class MoonrakerApiService
         var result = await _client.ExecuteAsync(request);
         return result.IsSuccessful;
     }
+    
+    public async Task<bool> PrintFile(string query)
+    {
+        var request = new RestRequest($"/printer/print/start?filename={query}", Method.Post); 
+        var result = await _client.ExecuteAsync(request);
+        return result.IsSuccessful;
+    }
+    
+    public async Task<GCodeFileRoot> GetFiles()
+    {
+        var request = new RestRequest($"/server/files/list", Method.Get);
+        var result = await _client.ExecuteAsync(request);
+
+        var deserializedClass = JsonSerializer.Generic.Utf16.Deserialize<GCodeFileRoot>(result.Content);
+        
+        return deserializedClass;
+    }
 
     public async Task<HeatableSensible> GetISensible(string query)
     {
