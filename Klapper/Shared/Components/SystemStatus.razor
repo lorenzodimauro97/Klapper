@@ -1,0 +1,84 @@
+@using Klapper.Data
+@inject MoonrakerApiService Api;
+
+<div class="container border p-3 mt-4" style="background-color: @StatusColor">
+    <div class="panel status" style="padding-top: 20px">
+            <div class="panel-heading">
+                <h1 class="panel-title text-center">@StatusName</h1>
+            </div>
+            <div class="panel-body text-center" style="padding-top: 20px">
+                <strong>@StatusText</strong>
+            </div>
+        </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public string StatusName { get; set; }
+
+    public string StatusColor { get; set; } = "#FFCCCC";
+
+    public string StatusText { get; set; }
+
+    public string[] StatusColors = {"#E57373", "#FFEE58", "#66BB6A" };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshData();
+        SetAutoRefresh();
+        await base.OnInitializedAsync();
+    }
+
+    private void SetAutoRefresh()
+    {
+    // Create a timer with a two second interval.
+        var timer = new System.Timers.Timer(2000);
+    // Hook up the Elapsed event for the timer. 
+        timer.Elapsed += async (sender, args) =>
+        {
+            await RefreshData();
+            await InvokeAsync(StateHasChanged);
+        };
+        timer.AutoReset = true;
+        timer.Enabled = true;
+    }
+
+    private async Task RefreshData()
+    {
+        try
+        {
+            var data = await Api.GetSystemInfoStatus(StatusName);
+            if (data.active_state == "active")
+            {
+                StatusColor = StatusColors[2];
+                StatusText = "OK";
+            }
+            else
+            {
+                {
+                    StatusColor = StatusColors[0];
+                    StatusText = $"Error! - {data.sub_state}";
+                }
+            }
+        }
+        catch(Exception){}
+    }
+
+}
+
+<style>
+    .status .panel-title {
+        font-family: 'Oswald', sans-serif;
+        font-size: 60px;
+        font-weight: bold;
+        color: #fff;
+        line-height: 45px;
+        width: 350px;
+        height: 75px;
+        letter-spacing: -0.8px;
+    }
+    .panel-body{
+    color: #fff;
+    }
+</style>

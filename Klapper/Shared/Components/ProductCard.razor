@@ -1,0 +1,76 @@
+@using Klapper.Classes
+@using Klapper.Data
+@using Klapper.Shared.Components
+@inject MoonrakerApiService Api
+@inject NotificationService Toast
+
+@if (data != null)
+{
+    <div class="product-card">
+        <div class="card" style="width: 18rem;">
+            <div class="card-body">
+                <h5 class="card-title">@Name</h5>
+                <p class="card-text">Temperature: @data.temperature °C</p>
+                <p class="card-text">Power: @data.GetPowerPercent().ToString(@"n2")%</p>
+            </div>
+            @if (data.IsHeater)
+            {
+                <div class="card-body">
+                    <p class="card-text">Target Temperature: 
+                        <RadzenNumeric @bind-value="@data.target" TValue="double" Min="0" Max="300" Change=@(OnPowerChange) Class="w-100"/></p>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+
+    [Parameter]
+    public string Name { get; set; }
+
+    public HeatableSensible data;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshData();
+        SetAutoRefresh();
+        await base.OnInitializedAsync();
+    }
+
+    private void SetAutoRefresh()
+    {
+        var timer = new System.Timers.Timer(200);
+        timer.Elapsed += async (sender, args) =>
+        {
+            await RefreshData();
+            await InvokeAsync(StateHasChanged);
+        };
+        timer.AutoReset = true;
+        timer.Enabled = true;
+    }
+
+    private async Task RefreshData()
+    {
+        try
+        {
+            data = await Api.GetISensible(Name);
+        }
+        catch(Exception){}
+    }
+
+
+    private async Task OnPowerChange(double args)
+    {
+        var result = await Api.RunGCode($"SET_HEATER_TEMPERATURE HEATER={Name} TARGET={args}");
+        
+        Toast.Notify(new NotificationMessage
+        {
+            Severity = result ? NotificationSeverity.Success : NotificationSeverity.Error,
+            Detail = result ? "Temperature Change Successful" : "Failed to change Temperature",
+            Summary = result ? "Success" : "Error",
+            Duration = 7000
+        });
+    }
+
+}

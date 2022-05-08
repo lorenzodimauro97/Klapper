@@ -1,0 +1,111 @@
+﻿@page "/"
+@using Klapper.Data
+@using Klapper.Classes
+@using Klapper.Shared.Components
+@inject MoonrakerApiService Api
+
+<PageTitle>Index</PageTitle>
+
+@if (SystemInfo != null)
+{
+    <div class="border p-3 mt-4">
+
+        <div class="row pb-2">
+            <h2 class="text-primary">System Status</h2>
+        </div>
+
+        @foreach (var status in SystemInfo.available_services)
+        {
+            <div style="display:inline-block; padding: 20px">
+                <SystemStatus StatusName=@status></SystemStatus>
+            </div>
+        }
+    </div>
+}
+
+@if (KlipperIsRunning)
+{
+@if (Sensors != null)
+{
+    <div class="border p-3 mt-4">
+
+        <div class="row pb-2">
+            <h2 class="text-primary">Heaters And Sensors</h2>
+        </div>
+
+        @foreach (var heater in Sensors)
+        {
+            <div style="display:inline-block; padding: 20px">
+                <ProductCard @ref="HeaterComponent" Name=@heater></ProductCard>
+            </div>
+        }
+        <div class="row pb-2">
+            <h2 class="text-primary">Temperature Chart</h2>
+        </div>
+
+        <TemperatureChart Sensors="HeaterComponents"></TemperatureChart>
+
+    </div>
+}
+}
+else
+{
+}
+
+@code
+{
+
+    bool KlipperIsRunning { get; set; }
+    bool KlipperIsInitialized { get; set; }
+    List<string> Heaters { get; set; }
+    private List<ProductCard> HeaterComponents = new();
+
+    public ProductCard HeaterComponent
+    {
+        set => HeaterComponents.Add(value);
+    }
+
+    List<string> Sensors { get; set; }
+    private SystemInfo SystemInfo { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        SetKlipperStatusTimer();
+
+        await base.OnInitializedAsync();
+    }
+
+    private void SetKlipperStatusTimer()
+    {
+        var timer = new System.Timers.Timer(1000);
+        timer.Elapsed += async (sender, args) =>
+        {
+            await CheckKlipperStatus();
+            await InvokeAsync(StateHasChanged);
+        };
+        timer.AutoReset = true;
+        timer.Enabled = true;
+    }
+
+    public async Task CheckKlipperStatus()
+    {
+        SystemInfo = await Api.GetSystemInfo();
+
+        KlipperIsRunning = SystemInfo.service_state.klipper.active_state == "active";
+
+        if (KlipperIsRunning && !KlipperIsInitialized)
+        {
+            await InitializeKlipperComponents();
+        }
+    }
+
+    public async Task InitializeKlipperComponents()
+    {
+        var queryList = await Api.GetQueryableObjects("heaters");
+
+        Heaters = queryList.result.status.heaters.available_heaters;
+        Sensors = queryList.result.status.heaters.available_sensors;
+
+        KlipperIsInitialized = true;
+    }
+}

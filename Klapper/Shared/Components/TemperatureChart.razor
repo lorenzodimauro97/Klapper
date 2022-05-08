@@ -1,0 +1,88 @@
+@using Klapper.Data
+@inject MoonrakerApiService Api;
+
+@if (Sensors != null)
+{
+    <RadzenChart>
+        @foreach (var sensor in Sensors.Where(sensor => Temperatures.Any(x => x.Item1 == sensor.Name)))
+        {
+            var temperature = Temperatures.Last(x => x.Item1 == sensor.Name);
+            
+            <RadzenLineSeries Data="@(temperature.Item2)" CategoryProperty="Date" Title="@GetTemperature(temperature.Item1)" LineType="@LineType.Solid" ValueProperty="temperature">
+                <RadzenMarkers MarkerType="@MarkerType.None"/>
+            </RadzenLineSeries>
+        }
+        <RadzenLegend Visible="true"/>
+        <RadzenCategoryAxis Padding="20" FormatString="{0:HH:mm:ss}"/>
+        <RadzenValueAxis>
+            <RadzenGridLines Visible="true"/>
+            <RadzenAxisTitle Text="Temperatures"/>
+        </RadzenValueAxis>
+    </RadzenChart>
+}
+
+@code {
+    [Parameter] public List<ProductCard> Sensors { get; set; }
+    private List<(string, List<Temperature>, string)> Temperatures { get; set; } = new();
+
+    //public RadzenChart Chart { get; set; }
+
+
+    private bool FirstStart { get; set; } = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        InitializeChart();
+        SetAutoRefresh();
+        await base.OnInitializedAsync();
+    }
+
+    private void InitializeChart()
+    {
+        Temperatures.Clear();
+        
+        foreach (var sensor in Sensors)
+        {
+            Temperatures.Add((sensor.Name, new List<Temperature> {new()}, $"{sensor.Name}: 0"));
+        }
+    }
+    
+    private string GetTemperature(string reference)
+    {
+        var temperature = Temperatures.Last(x => x.Item1 == reference);
+        return $"{temperature.Item1}: {temperature.Item2.Last().temperature} °C";
+    }
+
+    private void SetAutoRefresh()
+    {
+        var timer = new System.Timers.Timer(600);
+        timer.Elapsed += async (sender, args) =>
+        {
+            RefreshData();
+            await InvokeAsync(StateHasChanged);
+        };
+        
+        timer.AutoReset = true;
+        timer.Enabled = true;
+    }
+
+    private void RefreshData()
+    {
+        if (Temperatures.Count == 0) return;
+        foreach (var sensor in Sensors.Where(sensor => Temperatures.Any(x => x.Item1 == sensor.Name)))
+        {
+            var temperature = Temperatures.First(x => x.Item1 == sensor.Name);
+            temperature.Item3 = $"{temperature.Item1}: {sensor.data.temperature:n3}";
+            
+            temperature.Item2.Add(new Temperature(sensor.data));
+
+            if (FirstStart)
+                temperature.Item2.RemoveAt(0);
+            else if (Temperatures.First(x => x.Item1 == sensor.Name).Item2.Count > 300)
+                temperature.Item2.RemoveRange(0,2);
+        }
+
+        FirstStart = false;
+        return;
+    }
+}
