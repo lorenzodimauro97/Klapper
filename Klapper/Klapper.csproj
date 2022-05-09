@@ -13,4 +13,8 @@
         <PackageReference Include="SpanJson" Version="3.2.2" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="wwwroot\js" />
+    </ItemGroup>
+
 </Project>

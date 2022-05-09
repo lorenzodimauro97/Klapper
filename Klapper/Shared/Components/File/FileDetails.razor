@@ -2,57 +2,51 @@
 @using Klapper.Data
 @inject MoonrakerApiService Api
 
-<div class="container py-4 py-xl-5">
-    <div class="row mb-5">
-        <div class="col-md-8 col-xl-6 text-center mx-auto">
-            <h2>Print File?</h2>
-            <p class="w-lg-50">@File.filename</p>
-        </div>
+<div class="container">
+<div class="row text-center">
+    <h2>Print File?</h2>
+    <p class="w-lg-50">@File.filename</p>
+</div>
+<div class="row justify-content-between">
+    <div class="col-md-7">
+        <p>
+            <strong>·</strong> <strong>Printed With:</strong> @File.slicer
+            <br>
+            <strong>Version</strong> @File.slicer_version
+            <br>
+            <br>
+            <strong>·</strong> <strong>Estimated time to completion:</strong> @File.GetEstimatedTime()
+            <br>
+            <br>
+            <strong>·</strong> <strong>Layer height:</strong> @File.layer_height mm
+            <br>
+            <br>
+            <strong>·</strong> <strong>Layer count:</strong> @File.layer_count
+            <br>
+            <br>
+            <strong>·</strong> <strong>Estimated object height:</strong> @File.object_height mm
+            <br>
+            <br>
+            <strong>·</strong> <strong>Estimated filament consumption:</strong> @File.filament_total.ToString("n2") mm
+        </p>
     </div>
-    <div class="row gy-4 row-cols-1 row-cols-md-2">
-        <div class="col">
+    @if (File.thumbnails?.Count > 0)
+    {
+        <div class="col-md-4">
             <div class="d-flex flex-column flex-lg-row">
-                <div class="py-4 py-lg-0 px-lg-4">
-                    <p>
-                        <strong>·</strong> <strong>Printed With:</strong> @File.slicer
-                        <br>
-                        <strong>Version</strong> @File.slicer_version
-                        <br>
-                        <br>
-                        <strong>·</strong> <strong>Estimated time to completion:</strong> @File.GetEstimatedTime()
-                        <br>
-                        <br>
-                        <strong>·</strong> <strong>Layer height:</strong> @File.layer_height mm
-                        <br>
-                        <br>
-                        <strong>·</strong> <strong>Layer count:</strong> @File.layer_count
-                        <br>
-                        <br>
-                        <strong>·</strong> <strong>Estimated object height:</strong> @File.object_height mm
-                        <br>
-                        <br>
-                        <strong>·</strong> <strong>Estimated filament consumption:</strong> @File.filament_total.ToString("n2") mm
-                    </p>
-                </div>
+                <img src="data:image/bmp;base64, @(_imageBase64)" alt=""/>
             </div>
         </div>
-        @if (File.thumbnails?.Count > 0)
-        {
-            <div class="col">
-                <div class="d-flex flex-column flex-lg-row">
-                    <img src="data:image/bmp;base64, @(_imageBase64)" style="width: 50%; height: 20%; border-radius: 8px;" alt=""/>
-                </div>
-            </div>
-        }
+    }
+</div>
+<div class="row justify-content-between" style="padding-top: 20px;">
+    <div class="col">
+        <button class="btn btn-danger ms-1" type="button" @onclick="OnCancel">Cancel</button>
     </div>
-    <div class="row gy-4 row-cols-1 row-cols-md-2" style="padding-top: 10px;">
-        <div class="col">
-            <button class="btn btn-danger" type="button" @onclick="OnCancel">Cancel</button>
-        </div>
-        <div class="col" style="text-align: right;">
-            <button class="btn btn-success" type="button" @onclick="OnStartPrint">Start Printing</button>
-        </div>
+    <div class="col text-end">
+        <button class="btn btn-success" type="button" @onclick="OnStartPrint">Start Printing</button>
     </div>
+</div>
 </div>
 
 @code
