@@ -17,6 +17,16 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
+    "Kestrel": {
+      "Endpoints": {
+        "Http": {
+          "Url": "http://*:5000"
+        },
+        "Https": {
+          "Url": "https://*:5001"
+        }
+      }
+    },
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,

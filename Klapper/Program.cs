@@ -1,4 +1,3 @@
-using Klapper.Classes;
 using Klapper.Data;
 using Radzen;
 
@@ -7,12 +6,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddSingleton(x =>
-{
-    var logger = x.GetRequiredService<ILogger<MoonrakerApiService>>();
-    const string baseAddress = "http://192.168.8.125";
-    return new MoonrakerApiService(logger, baseAddress);
-});
+
+builder.Services.AddSingleton<MoonrakerApiService>();
 builder.Services.AddSingleton<PrinterStatusService>();
 
 builder.Services.AddScoped<NotificationService>();

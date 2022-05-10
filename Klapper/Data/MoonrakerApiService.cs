@@ -10,11 +10,13 @@ public class MoonrakerApiService
 {
     private readonly RestClient _client;
     private readonly ILogger<MoonrakerApiService> _logger;
+    private readonly IConfiguration _configuration;
 
-    public MoonrakerApiService(ILogger<MoonrakerApiService> logger, string baseAddress)
+    public MoonrakerApiService(ILogger<MoonrakerApiService> logger, IConfiguration configuration)
     {
         _logger = logger;
-        _client = new RestClient(baseAddress);
+        _configuration = configuration;
+        _client = new RestClient(_configuration.GetValue<string>("HostSettings:Address"));
         _client.UseSerializer<SpanJsonSerializationAdapter>();
     }
 
