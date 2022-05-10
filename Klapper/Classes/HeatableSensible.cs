@@ -4,14 +4,15 @@ public class HeatableSensible
 {
     public double pressure_advance { get; set; }
     public double target { get; set; }
-    public double power { get; set; }
+    public double power { get; set; } = -1;
     public bool can_extrude { get; set; }
     public double smooth_time { get; set; }
     public double temperature { get; set; }
     public double measured_min_temp { get; set; }
     public double measured_max_temp { get; set; }
 
-    public bool IsHeater { get; set; }
+    public bool IsHeater => power != -1;
+
     public DateTime Date { get; set; } = DateTime.Now;
 
     public double GetPowerPercent()

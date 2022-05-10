@@ -10,8 +10,11 @@
             <div class="card-body">
                 <h5 class="card-title">@Name</h5>
                 <p class="card-text">Temperature: @data.temperature °C</p>
-                <p class="card-text">Power: @data.GetPowerPercent().ToString(@"n2")%</p>
-            </div>
+                @if (data.IsHeater)
+                {
+                    <p class="card-text">Power: @data.GetPowerPercent().ToString(@"n2")%</p>
+                }
+                </div>
             @if (data.IsHeater)
             {
                 <div class="card-body">
