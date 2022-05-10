@@ -4,10 +4,11 @@
 @using Klapper.Shared.Components.File
 @using System.Timers
 @inject MoonrakerApiService Api
+@inject PrinterStatusService StatusService
 
 <PageTitle>Index</PageTitle>
 
-@if (KlipperIsRunning)
+@if (StatusService.KlipperIsRunning)
 {
     <PrinterStatus OnPausePrint="async () => { await Api.PauseCancelResumePrint(0); }"
                    OnCancelPrint="async () => { await Api.PauseCancelResumePrint(1); }"
@@ -49,8 +50,6 @@
 
 @code
 {
-
-    bool KlipperIsRunning { get; set; }
     bool KlipperIsInitialized { get; set; }
     List<string> Heaters { get; set; }
     private readonly List<ProductCard> _heaterComponents = new();
@@ -81,19 +80,16 @@
         timer.Enabled = true;
     }
 
-    public async Task CheckKlipperStatus()
+    private async Task CheckKlipperStatus()
     {
-        var systemInfo = await Api.GetSystemInfo();
 
-        KlipperIsRunning = systemInfo.service_state.klipper.active_state == "active";
-
-        if (KlipperIsRunning && !KlipperIsInitialized)
+        if (StatusService.KlipperIsRunning && !KlipperIsInitialized)
         {
             await InitializeKlipperComponents();
         }
     }
 
-    public async Task InitializeKlipperComponents()
+    private async Task InitializeKlipperComponents()
     {
         var queryList = await Api.GetQueryableObjects("heaters");
 

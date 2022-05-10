@@ -4,10 +4,13 @@ namespace Klapper.Data;
 
 public class PrinterStatusService
 {
-    public PrinterInfo PrinterInfo { get; set; }
-    public SystemInfo SystemInfo { get; set; }
-    public PrinterStatus PrinterStatus { get; set; }
-    
+    public PrinterInfo? PrinterInfo { get; set; }
+    public SystemInfo? SystemInfo { get; set; }
+    public PrinterStatus? PrinterStatus { get; set; }
+
+    public bool KlipperIsRunning => SystemInfo?.service_state.klipper.active_state == "active";
+    public bool KlippyIsReady => PrinterStatus?.status.webhooks.state == "ready";
+
     private readonly MoonrakerApiService _api;
 
     public PrinterStatusService(MoonrakerApiService api)
