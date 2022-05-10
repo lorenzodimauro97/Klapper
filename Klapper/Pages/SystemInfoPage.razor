@@ -1,0 +1,49 @@
+@page "/SystemInfoPage"
+@using Klapper.Data
+@using Klapper.Classes
+@using Klapper.Shared.Components
+@inject MoonrakerApiService Api
+
+@if (SystemInfo != null)
+{
+    <div class="border p-3 mt-4">
+        <div class="row pb-2">
+            <h2 class="text-primary">System Status</h2>
+        </div>
+
+        @foreach (var status in SystemInfo.available_services)
+        {
+            <div style="display:inline-block; padding: 20px">
+                <SystemStatus StatusName=@status></SystemStatus>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private SystemInfo SystemInfo { get; set; }  
+    
+    protected override async Task OnInitializedAsync()
+    {
+        SetKlipperStatusTimer();
+
+        await base.OnInitializedAsync();
+    }
+
+    private void SetKlipperStatusTimer()
+    {
+        var timer = new System.Timers.Timer(1000);
+        timer.Elapsed += async (sender, args) =>
+        {
+            await CheckKlipperStatus();
+            await InvokeAsync(StateHasChanged);
+        };
+        timer.AutoReset = true;
+        timer.Enabled = true;
+    }
+
+    public async Task CheckKlipperStatus()
+    {
+        SystemInfo = await Api.GetSystemInfo();
+    }
+}

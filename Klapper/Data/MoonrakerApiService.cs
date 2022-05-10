@@ -18,12 +18,12 @@ public class MoonrakerApiService
         _client.UseSerializer<SpanJsonSerializationAdapter>();
     }
 
-    public async Task<MoonrakerObjectListClass> GetFullObjectList()
+    /*public async Task<MoonrakerObjectListClass> GetFullObjectList()
     {
         var request = new RestRequest("/printer/objects/list");
         var result = await _client.ExecuteAsync<MoonrakerObjectListClass>(request);
         return result.Data;
-    }
+    }*/
 
     public async Task<bool> RunGCode(string query)
     {
@@ -42,11 +42,7 @@ public class MoonrakerApiService
     public async Task<GCodeFileRoot> GetFiles()
     {
         var request = new RestRequest("/server/files/list");
-        var result = await _client.ExecuteAsync(request);
-
-        var deserializedClass = JsonSerializer.Generic.Utf16.Deserialize<GCodeFileRoot>(result.Content);
-
-        return deserializedClass;
+        return await LaunchGetRequest<GCodeFileRoot>(request, false);
     }
     
     public async Task<byte[]> GetImage(string query)
@@ -60,57 +56,53 @@ public class MoonrakerApiService
     public async Task<GCodeFileDetailsRoot> GetFileDetails(string query)
     {
         var request = new RestRequest($"/server/files/metadata?filename={query}");
-        var result = await _client.ExecuteAsync(request);
-
-        var deserializedClass = JsonSerializer.Generic.Utf16.Deserialize<GCodeFileDetailsRoot>(result.Content);
-
-        return deserializedClass;
+        return await LaunchGetRequest<GCodeFileDetailsRoot>(request, false);
     }
 
     public async Task<HeatableSensible> GetISensible(string query)
     {
         var request = new RestRequest($"/printer/objects/query?{query}");
-        var result = await _client.ExecuteAsync(request);
-        var jo = JObject.Parse(result.Content);
-        var parsedJson = Filter(jo, query);
 
-        var deserializedClass = JsonSerializer.Generic.Utf16.Deserialize<HeatableSensible>(parsedJson.ToString());
-
-        deserializedClass.IsHeater =
-            parsedJson.Any(x => x.Type == JTokenType.Property && ((JProperty)x).Name == "power");
-
-        return deserializedClass;
+        return await LaunchGetRequest<HeatableSensible>(request, true, query);
     }
 
     public async Task<SystemInfo> GetSystemInfo()
     {
         var request = new RestRequest("/machine/system_info");
-        var result = await _client.ExecuteAsync(request);
-        var jo = JObject.Parse(result.Content);
-        var parsedJson = Filter(jo, "system_info");
-
-        var deserializedClass = System.Text.Json.JsonSerializer.Deserialize<SystemInfo>(parsedJson.ToString());
-
-        return deserializedClass;
+        return await LaunchGetRequest<SystemInfo>(request, true, "system_info");
     }
 
     public async Task<SystemInfoStatus> GetSystemInfoStatus(string query)
     {
         var request = new RestRequest("/machine/system_info");
-        var result = await _client.ExecuteAsync(request);
-        var jo = JObject.Parse(result.Content);
-        var parsedJson = Filter(jo, query);
-
-        var deserializedClass = System.Text.Json.JsonSerializer.Deserialize<SystemInfoStatus>(parsedJson.ToString());
-
-        return deserializedClass;
+        return await LaunchGetRequest<SystemInfoStatus>(request, true, query);
     }
 
     public async Task<MoonrakerQueryResultObject> GetQueryableObjects(string query)
     {
         var request = new RestRequest($"/printer/objects/query?{query}");
-        var result = await _client.ExecuteAsync<MoonrakerQueryResultObject>(request);
-        return result.Data;
+        return await LaunchGetRequest<MoonrakerQueryResultObject>(request, false);
+    }
+
+    private async Task<T> LaunchGetRequest<T>(RestRequest request, bool filter, string filterQuery = "")
+    {
+        var executeRequest = await _client.ExecuteAsync(request);
+        var requestResult = executeRequest.Content;
+
+        if (!executeRequest.IsSuccessful)
+        {
+            throw new BadHttpRequestException(executeRequest.StatusCode.ToString());
+        }
+
+        if (filter)
+        {
+            var jo = JObject.Parse(requestResult);
+            requestResult = Filter(jo, filterQuery).ToString();
+        }
+        
+        var deserializedClass = System.Text.Json.JsonSerializer.Deserialize<T>(requestResult);
+
+        return deserializedClass;
     }
 
     private static JToken? Filter(JObject jObject, string filter)

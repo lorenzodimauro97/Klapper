@@ -8,23 +8,6 @@
 
 <PageTitle>Index</PageTitle>
 
-@if (SystemInfo != null)
-{
-    <div class="border p-3 mt-4">
-
-        <div class="row pb-2">
-            <h2 class="text-primary">System Status</h2>
-        </div>
-
-        @foreach (var status in SystemInfo.available_services)
-        {
-            <div style="display:inline-block; padding: 20px">
-                <SystemStatus StatusName=@status></SystemStatus>
-            </div>
-        }
-    </div>
-}
-
 @if (KlipperIsRunning)
 {
 @if (Sensors != null)
@@ -75,7 +58,6 @@
     }
 
     List<string> Sensors { get; set; }
-    private SystemInfo SystemInfo { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -98,9 +80,9 @@
 
     public async Task CheckKlipperStatus()
     {
-        SystemInfo = await Api.GetSystemInfo();
+        var systemInfo = await Api.GetSystemInfo();
 
-        KlipperIsRunning = SystemInfo.service_state.klipper.active_state == "active";
+        KlipperIsRunning = systemInfo.service_state.klipper.active_state == "active";
 
         if (KlipperIsRunning && !KlipperIsInitialized)
         {
