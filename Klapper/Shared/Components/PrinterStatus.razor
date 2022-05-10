@@ -1,0 +1,67 @@
+@using Klapper.Data
+@inject PrinterStatusService StatusService
+
+@if (StatusService.PrinterStatus != null)
+{
+    <div class="row">
+        <h2 class="text-primary">Printer Status</h2>
+    </div>
+    <div class="row">
+        <div class="col-md-2">
+            <h4>
+                <strong>Status:</strong> @StatusService.PrinterStatus.status.print_stats.state
+            </h4>
+            <br/>
+            @if (StatusService.PrinterStatus.status.print_stats.state != "standby")
+            {
+                <strong>File Name:</strong>
+                @StatusService.PrinterStatus.status.print_stats.filename
+            }
+        </div>
+        <div class="col-md-2">
+            @if (StatusService.PrinterStatus.status.print_stats.state is "printing" or "paused")
+            {
+                <div class="btn-group" role="group" aria-label="Basic example">
+                    @if (StatusService.PrinterStatus.status.print_stats.state is "printing")
+                    {
+                        <button type="button" class="btn btn-secondary" @onclick="OnPausePrint">Pause</button>
+                    }
+                    else
+                    {
+                        <button type="button" class="btn btn-secondary" @onclick="OnResumePrint">Resume</button>
+                    }
+                    <button type="button" class="btn btn-secondary btn-danger" @onclick="OnCancelPrint">Cancel</button>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code
+{
+    [Parameter]
+    public Action OnPausePrint { get; set; }
+
+    [Parameter]
+    public Action OnCancelPrint { get; set; }
+
+    [Parameter]
+    public Action OnResumePrint { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await StatusService.ForceRefreshAll();
+
+        SetUIRefreshTimer();
+
+        await base.OnInitializedAsync();
+    }
+
+    private void SetUIRefreshTimer()
+    {
+        var timer = new System.Timers.Timer(2000);
+        timer.Elapsed += async (sender, args) => { await InvokeAsync(StateHasChanged); };
+        timer.AutoReset = true;
+        timer.Enabled = true;
+    }
+}

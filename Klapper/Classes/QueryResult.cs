@@ -84,10 +84,10 @@ public class VirtualSdcard
 {
     public string path { get; set; }
     public double progress { get; set; }
-    public int file_position { get; set; }
+    public double file_position { get; set; }
     public bool is_active { get; set; }
     public object file_path { get; set; }
-    public int file_size { get; set; }
+    public double file_size { get; set; }
 }
 
 public class StepperZ
@@ -653,7 +653,7 @@ public class Toolhead
     public string extruder { get; set; }
 }
 
-public class Status
+public class QueryResultStatus
 {
     [DataMember(Name = "tmc2209 extruder")]
     public Tmc2209Extruder Tmc2209Extruder { get; set; }
@@ -701,7 +701,7 @@ public class Status
 
 public class MoonrakerQueryResult
 {
-    public Status status { get; set; }
+    public QueryResultStatus status { get; set; }
     public double eventtime { get; set; }
 }
 

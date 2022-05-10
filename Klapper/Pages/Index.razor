@@ -2,7 +2,6 @@
 @using Klapper.Data
 @using Klapper.Shared.Components
 @using Klapper.Shared.Components.File
-@using Klapper.Classes
 @using System.Timers
 @inject MoonrakerApiService Api
 
@@ -10,7 +9,11 @@
 
 @if (KlipperIsRunning)
 {
-@if (Sensors != null)
+    <PrinterStatus OnPausePrint="async () => { await Api.PauseCancelResumePrint(0); }"
+                   OnCancelPrint="async () => { await Api.PauseCancelResumePrint(1); }"
+                   OnResumePrint="async () => { await Api.PauseCancelResumePrint(2); }"></PrinterStatus>
+
+    @if (Sensors != null)
 {
     <div class="border p-3 mt-4">
 

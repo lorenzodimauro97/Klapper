@@ -31,6 +31,21 @@ public class MoonrakerApiService
         var result = await _client.ExecuteAsync(request);
         return result.IsSuccessful;
     }
+    
+    public async Task<bool> PauseCancelResumePrint(int code)
+    {
+        var requestUrl = code switch
+        {
+            0 => "/printer/print/pause",
+            1 => "/printer/print/cancel",
+            2 => "/printer/print/resume",
+            _ => string.Empty
+        };
+
+        var request = new RestRequest(requestUrl, Method.Post);
+        var result = await _client.ExecuteAsync(request);
+        return result.IsSuccessful;
+    }
 
     public async Task<bool> PrintFile(string query)
     {
@@ -111,5 +126,17 @@ public class MoonrakerApiService
             .Where(t => t.Type == JTokenType.Property && ((JProperty)t).Name == filter)
             .Select(p => ((JProperty)p).Value)
             .FirstOrDefault();
+    }
+
+    public async Task<PrinterInfoRoot> GetPrinterInfo()
+    {
+        var request = new RestRequest("/printer/info");
+        return await LaunchGetRequest<PrinterInfoRoot>(request, false);
+    }
+
+    public async Task<PrinterStatusRoot> GetPrinterStatus()
+    {
+        var request = new RestRequest("/printer/objects/query?webhooks&virtual_sdcard&print_stats");
+        return await LaunchGetRequest<PrinterStatusRoot>(request, false);
     }
 }
