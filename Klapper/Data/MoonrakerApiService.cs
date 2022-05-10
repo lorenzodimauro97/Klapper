@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Klapper.Classes;
 using Klapper.Shared.Components;
 using Newtonsoft.Json.Linq;
@@ -36,11 +37,21 @@ public class MoonrakerApiService
         return result.Data;
     }*/
 
-    public async Task<bool> RunGCode(string query)
+    public async Task<(bool, string)> RunGCode(string query)
     {
         var request = new RestRequest($"/printer/gcode/script?script={query}", Method.Post);
         var result = await _client.ExecuteAsync(request);
-        return result.IsSuccessful;
+
+        var response = string.Empty;
+
+        if (!result.IsSuccessful)
+        {
+            var rx = new Regex(@"{(.*?)}");
+            var responseClass = System.Text.Json.JsonSerializer.Deserialize<ErrorRoot>(result.Content);
+            response = rx.Match(responseClass.error.traceback).Groups[1].Value;
+        }
+        
+        return (result.IsSuccessful, response);
     }
     
     public async Task<bool> PauseCancelResumePrint(int code)

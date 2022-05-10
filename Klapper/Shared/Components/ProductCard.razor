@@ -72,9 +72,9 @@
 
         Toast.Notify(new NotificationMessage
         {
-            Severity = result ? NotificationSeverity.Success : NotificationSeverity.Error,
-            Detail = result ? "Temperature Change Successful" : "Failed to change Temperature",
-            Summary = result ? "Success" : "Error",
+            Severity = result.Item1 ? NotificationSeverity.Success : NotificationSeverity.Error,
+            Detail = result.Item1 ? "Temperature Change Successful" : result.Item2,
+            Summary = result.Item1 ? "Success" : "Error",
             Duration = 7000
         });
     }

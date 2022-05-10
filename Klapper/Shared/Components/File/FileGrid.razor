@@ -4,30 +4,51 @@
 @inject NotificationService Toast
 @inject DialogService DialogService
 
-<RadzenButton Text="Refresh" Click="@RefreshData" Style="margin-bottom: 10px;"/>
 
-@if (GCodeFiles?.Count > 0)
-{
-    <RadzenDataGrid AllowFiltering="true" AllowPaging="true" PageSize="5" FilterMode="FilterMode.SimpleWithMenu" AllowSorting="true" Data="@GCodeFiles" TItem="GCodeFileDetails" RowSelect="ShowInlineDialog">
-        <Columns>
-            <RadzenDataGridColumn TItem="GCodeFileDetails" Property="filename" Title="GCode File Name" Frozen="true" Width="140px"/>
-            <RadzenDataGridColumn TItem="GCodeFileDetails" Property="size" Title="Size" Width="140px">
-                <Template Context="data">
-                    <div>@(data.size / 1000) KB</div>
-                </Template>
-            </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="GCodeFileDetails" Property="modified" Title="Last Modified" Width="200px">
-                <Template Context="data">
-                    <div>@(DateTime.UnixEpoch.AddSeconds(data.modified))</div>
-                </Template>
-            </RadzenDataGridColumn>
-        </Columns>
-    </RadzenDataGrid>
-}
+<div class="row pb-2">
+    <button class="btn btn-primary" type="button" @onclick="RefreshData" disabled="@IsRefreshingData" style="width: 40px">
+        <span class="oi oi-reload" aria-hidden="true"></span>
+    </button>
+</div>
+<div class="row">
+    @if (GCodeFiles?.Count > 0)
+    {
+        <RadzenDataGrid AllowFiltering="true" AllowPaging="true" PageSize="5" FilterMode="FilterMode.SimpleWithMenu" AllowSorting="true" Data="@GCodeFiles" TItem="GCodeFile" RowSelect="ShowInlineDialog">
+            <Columns>
+                <RadzenDataGridColumn TItem="GCodeFile" Property="path" Title="GCode File Name" Frozen="true" Width="140px"/>
+                <RadzenDataGridColumn TItem="GCodeFile" Property="size" Title="Size" Width="140px">
+                    <Template Context="data">
+                        <div>@(data.size / 1000) KB</div>
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="GCodeFile" Property="modified" Title="Last Modified" Width="200px">
+                    <Template Context="data">
+                        <div>@(DateTime.UnixEpoch.AddSeconds(data.modified))</div>
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="GCodeFile" Property="modified" Title="Action" Width="200px" Filterable="false">
+                    <Template Context="data">
+                        @if (data.permissions.Contains("w"))
+                        {
+                            <button class="btn btn-primary" type="button" style="width: 40px;">
+                                <span class="oi oi-trash" aria-hidden="true"></span>
+                            </button>
+                        }
+                        <button class="btn btn-primary" type="button" style="width: 40px;">
+                            <span class="oi oi-data-transfer-download" aria-hidden="true"></span>
+                        </button>
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    }
+</div>
 
 @code {
 
-    private List<GCodeFileDetails> GCodeFiles { get; set; } = new();
+    private List<GCodeFile> GCodeFiles { get; set; } = new();
+
+    private bool IsRefreshingData { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -37,15 +58,11 @@
 
     private async Task RefreshData()
     {
+        IsRefreshingData = true;
         GCodeFiles.Clear();
         try
         {
-            var gcodeTempList = (await Api.GetFiles()).result;
-            foreach (var gcodeFile in gcodeTempList)
-            {
-                var detailedGcodeFile = await Api.GetFileDetails(gcodeFile.path);
-                GCodeFiles.Add(detailedGcodeFile.result);
-            }
+            GCodeFiles = (await Api.GetFiles()).result;
             GCodeFiles.Sort((a, b) => b.modified.CompareTo(a.modified));
 
             Toast.Notify(new NotificationMessage
@@ -57,16 +74,29 @@
             });
         }
 
-        catch (Exception)
+        catch (Exception ex)
         {
+            Toast.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Detail = $"Error! {ex.Message}",
+                Summary = "Error",
+                Duration = 7000
+            });
+        }
+        finally
+        {
+            IsRefreshingData = false;
         }
     }
 
-    private async Task ShowInlineDialog(GCodeFileDetails file)
+    private async Task ShowInlineDialog(GCodeFile file)
     {
+        var detailedFile = (await Api.GetFileDetails(file.path)).result;
+
         var result = await DialogService.OpenAsync("Print File", ds =>
-            @<FileDetails File="@file"
-                          OnStartPrint="async () => { ds.Close(true); await OnPrintFile(file);}"
+            @<FileDetails File="@detailedFile"
+                          OnStartPrint="async () => { ds.Close(true); await OnPrintFile(detailedFile);}"
                           OnCancel="() => ds.Close(false)">
             </FileDetails>, new DialogOptions() { Width = "50%", Height = "auto" });
     }
