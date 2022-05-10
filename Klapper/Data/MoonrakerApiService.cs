@@ -16,7 +16,16 @@ public class MoonrakerApiService
     {
         _logger = logger;
         _configuration = configuration;
-        _client = new RestClient(_configuration.GetValue<string>("HostSettings:Address"));
+        try
+        {
+            _client = new RestClient(_configuration.GetValue<string>("HostSettings:Address"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogCritical("Failed to initialize RestSharp! Error: {Error}", ex.Message);
+            Environment.Exit(1);
+        }
+
         _client.UseSerializer<SpanJsonSerializationAdapter>();
     }
 

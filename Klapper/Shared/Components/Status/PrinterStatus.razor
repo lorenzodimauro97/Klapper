@@ -1,42 +1,45 @@
 @using Klapper.Classes
 
-<div class="table-responsive">
-    <table class="table table-striped table-sm">
-        <thead>
-        <tr>
-            <th></th>
-            <th></th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <td>Hostname</td>
-            <td>@PrinterInfo.hostname</td>
+@if (PrinterInfo != null)
+{
+    <div class="table-responsive">
+        <table class="table table-striped table-sm">
+            <thead>
+            <tr>
+                <th></th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>Hostname</td>
+                <td>@PrinterInfo.hostname</td>
 
-        </tr>
-        <tr>
-            <td>Klipper Version</td>
-            <td>@PrinterInfo.software_version</td>
+            </tr>
+            <tr>
+                <td>Klipper Version</td>
+                <td>@PrinterInfo.software_version</td>
 
-        </tr>
-        <tr>
-            <td>Klippy State</td>
-            <td>@PrinterInfo.state</td>
+            </tr>
+            <tr>
+                <td>Klippy State</td>
+                <td>@PrinterInfo.state</td>
 
-        </tr>
-        <tr>
-            <td>Klippy State Message</td>
-            <td>@PrinterInfo.state_message</td>
+            </tr>
+            <tr>
+                <td>Klippy State Message</td>
+                <td>@PrinterInfo.state_message</td>
 
-        </tr>
-        <tr>
-            <td>Host CPU</td>
-            <td>@PrinterInfo.cpu_info</td>
+            </tr>
+            <tr>
+                <td>Host CPU</td>
+                <td>@PrinterInfo.cpu_info</td>
 
-        </tr>
-        </tbody>
-    </table>
-</div>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+}
 
 @code {
 

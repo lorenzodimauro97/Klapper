@@ -8,8 +8,7 @@
 
 @if (GCodeFiles?.Count > 0)
 {
-    <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" FilterMode="FilterMode.Advanced" AllowSorting="true"
-                    Data="@GCodeFiles" TItem="GCodeFileDetails" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or" RowSelect="ShowInlineDialog">
+    <RadzenDataGrid AllowFiltering="true" AllowPaging="true" PageSize="5" FilterMode="FilterMode.SimpleWithMenu" AllowSorting="true" Data="@GCodeFiles" TItem="GCodeFileDetails" RowSelect="ShowInlineDialog">
         <Columns>
             <RadzenDataGridColumn TItem="GCodeFileDetails" Property="filename" Title="GCode File Name" Frozen="true" Width="140px"/>
             <RadzenDataGridColumn TItem="GCodeFileDetails" Property="size" Title="Size" Width="140px">

@@ -10,10 +10,10 @@
             <h2 class="text-primary">System Status</h2>
         </div>
 
-        <div class="row pb-2">
+        <div class="row mb-3 justify-content-between">
             @foreach (var status in PrinterStatus.SystemInfo.available_services)
             {
-                <div style="display:inline-block; padding: 20px">
+                <div class="col-md-2 mb-3">
                     <SystemStatus StatusName=@status></SystemStatus>
                 </div>
             }

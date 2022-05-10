@@ -2,14 +2,21 @@
 @using System.Timers
 @inject MoonrakerApiService Api;
 
-<div class="container border p-3 mt-4" style="background-color: @StatusColor">
-    <div class="panel status" style="padding-top: 20px">
-        <div class="panel-heading">
-            <h1 class="panel-title text-center">@StatusName</h1>
-        </div>
-        <div class="panel-body text-center" style="padding-top: 20px">
-            <strong>@StatusText</strong>
-        </div>
+<div class="card">
+    <div class="card-body">
+        <h2 class="card-title text-center">@StatusName</h2>
+    </div>
+    <div class="card-footer text-center">
+        
+        @if (StatusText == "OK")
+        {
+            <span class="oi oi-circle-check" style="color: @StatusColor" aria-hidden="true"></span>
+        }
+        else
+        {
+            <span class="oi oi-circle-x" style="color: @StatusColor" aria-hidden="true"></span>
+        }
+        &nbsp; <strong>@StatusText</strong>
     </div>
 </div>
 
@@ -71,17 +78,7 @@
 }
 
 <style>
-    .status .panel-title {
-        font-family: 'Oswald', sans-serif;
-        font-size: 60px;
-        font-weight: bold;
-        color: #fff;
-        line-height: 45px;
-        width: 350px;
-        height: 75px;
-        letter-spacing: -0.8px;
-    }
-    .panel-body{
-    color: #fff;
+    .card {
+      box-shadow: 0 0 10px 0 rgba(100, 100, 100, 0.26);
     }
 </style>
