@@ -179,4 +179,10 @@ public class MoonrakerApiService
         var request = new RestRequest("/printer/objects/query?webhooks&virtual_sdcard&print_stats");
         return await LaunchGetRequest<PrinterStatusRoot>(request, false);
     }
+
+    public async Task<(bool, string)> DeleteFile(string file)
+    {
+        var request = new RestRequest($"/server/files/gcodes/{file}", Method.Delete);
+        return await LaunchPostRequest(request, $"DELETE {file}");
+    }
 }

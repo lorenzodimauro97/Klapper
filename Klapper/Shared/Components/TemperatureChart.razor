@@ -4,6 +4,10 @@
 
 @if (Sensors != null)
 {
+    <div class="row pb-2">
+        <h2 class="text-primary">Temperature Chart</h2>
+    </div>
+    
     <RadzenChart>
         @foreach (var sensor in Sensors.Where(sensor => Temperatures.Any(x => x.Item1 == sensor.Name)))
         {
