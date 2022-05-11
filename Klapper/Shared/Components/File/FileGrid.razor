@@ -9,11 +9,23 @@
     <button class="btn btn-primary" type="button" @onclick="RefreshData" disabled="@IsRefreshingData" style="width: 40px">
         <span class="oi oi-reload" aria-hidden="true"></span>
     </button>
+
+        <button class="btn btn-primary" type="button" style="width: 40px;" @onclick="ShowStartPrintDialog" disabled="@(SelectedGCodeFile == null)">
+            <span class="oi oi-print" aria-hidden="true"></span>
+        </button>
+    
+    <button class="btn btn-primary" type="button" style="width: 40px;" @onclick="ShowDeleteFileDialog" disabled="@(SelectedGCodeFile == null)">
+        <span class="oi oi-trash" aria-hidden="true"></span>
+    </button>
+
+    <button class="btn btn-primary" type="button" style="width: 40px;" disabled="@(SelectedGCodeFile == null)">
+        <span class="oi oi-data-transfer-download" aria-hidden="true"></span>
+    </button>
 </div>
 <div class="row">
     @if (GCodeFiles?.Count > 0)
     {
-        <RadzenDataGrid AllowFiltering="true" AllowPaging="true" PageSize="5" FilterMode="FilterMode.SimpleWithMenu" AllowSorting="true" Data="@GCodeFiles" TItem="GCodeFile" RowSelect="ShowInlineDialog">
+        <RadzenDataGrid AllowFiltering="true" AllowPaging="true" PageSize="5" FilterMode="FilterMode.SimpleWithMenu" AllowSorting="true" Data="@GCodeFiles" TItem="GCodeFile" RowSelect="SelectGCodeFile">
             <Columns>
                 <RadzenDataGridColumn TItem="GCodeFile" Property="path" Title="GCode File Name" Frozen="true" Width="140px"/>
                 <RadzenDataGridColumn TItem="GCodeFile" Property="size" Title="Size" Width="140px">
@@ -26,19 +38,6 @@
                         <div>@(DateTime.UnixEpoch.AddSeconds(data.modified))</div>
                     </Template>
                 </RadzenDataGridColumn>
-                <RadzenDataGridColumn TItem="GCodeFile" Property="modified" Title="Action" Width="200px" Filterable="false">
-                    <Template Context="data">
-                        @if (data.permissions.Contains("w"))
-                        {
-                            <button class="btn btn-primary" type="button" style="width: 40px;">
-                                <span class="oi oi-trash" aria-hidden="true"></span>
-                            </button>
-                        }
-                        <button class="btn btn-primary" type="button" style="width: 40px;">
-                            <span class="oi oi-data-transfer-download" aria-hidden="true"></span>
-                        </button>
-                    </Template>
-                </RadzenDataGridColumn>
             </Columns>
         </RadzenDataGrid>
     }
@@ -47,6 +46,8 @@
 @code {
 
     private List<GCodeFile> GCodeFiles { get; set; } = new();
+
+    private GCodeFile SelectedGCodeFile { get; set; }
 
     private bool IsRefreshingData { get; set; }
 
@@ -59,6 +60,7 @@
     private async Task RefreshData()
     {
         IsRefreshingData = true;
+        SelectedGCodeFile = null;
         GCodeFiles.Clear();
         try
         {
@@ -72,6 +74,8 @@
                 Summary = "Success",
                 Duration = 7000
             });
+
+            await InvokeAsync(StateHasChanged);
         }
 
         catch (Exception ex)
@@ -90,15 +94,31 @@
         }
     }
 
-    private async Task ShowInlineDialog(GCodeFile file)
+    private async Task SelectGCodeFile(GCodeFile file)
     {
-        var detailedFile = (await Api.GetFileDetails(file.path)).result;
+        SelectedGCodeFile = file;
+    }
+
+    private async Task ShowStartPrintDialog()
+    {
+        var detailedFile = (await Api.GetFileDetails(SelectedGCodeFile.path)).result;
 
         var result = await DialogService.OpenAsync("Print File", ds =>
             @<FileDetails File="@detailedFile"
                           OnStartPrint="async () => { ds.Close(true); await OnPrintFile(detailedFile);}"
                           OnCancel="() => ds.Close(false)">
             </FileDetails>, new DialogOptions() { Width = "50%", Height = "auto" });
+    }
+    
+    private async Task ShowDeleteFileDialog()
+    {
+        var detailedFile = (await Api.GetFileDetails(SelectedGCodeFile.path)).result;
+
+        var result = await DialogService.OpenAsync("Print File", ds =>
+            @<FileDeleteDialog File="@detailedFile"
+                          OnDelete="async () => { ds.Close(true); await OnDeleteFile(detailedFile);}"
+                          OnCancel="() => ds.Close(false)">
+            </FileDeleteDialog>, new DialogOptions() { Width = "50%", Height = "auto" });
     }
 
     private async Task OnPrintFile(GCodeFileDetails file)
@@ -113,6 +133,27 @@
                 Summary = result ? "Success" : "Error",
                 Duration = 7000
             });
+        }
+
+        catch (Exception)
+        {
+        }
+    }
+    
+    private async Task OnDeleteFile(GCodeFileDetails file)
+    {
+        try
+        {
+            var result = await Api.DeleteFile(file.filename);
+            Toast.Notify(new NotificationMessage
+            {
+                Severity = result.Item1 ? NotificationSeverity.Success : NotificationSeverity.Error,
+                Detail = result.Item1 ? $"{file.filename} Deleted" : $"Failed to delete {file.filename}",
+                Summary = result.Item1 ? "Success" : "Error",
+                Duration = 7000
+            });
+
+            if (result.Item1) await RefreshData();
         }
 
         catch (Exception)
