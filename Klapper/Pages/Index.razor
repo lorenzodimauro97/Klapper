@@ -1,6 +1,7 @@
 ﻿@page "/"
 @using Klapper.Data
 @using Klapper.Shared.Components
+@using Klapper.Shared.Components.Status
 @using Klapper.Shared.Components.File
 @using System.Timers
 @inject MoonrakerApiService Api
@@ -14,6 +15,8 @@
                    OnCancelPrint="async () => { await Api.PauseCancelResumePrint(1); }"
                    OnResumePrint="async () => { await Api.PauseCancelResumePrint(2); }"></PrinterStatus>
 
+    <PrinterControls MaxExtrusion="300"></PrinterControls>
+    
     @if (Sensors != null)
 {
     <div class="border p-3 mt-4">
