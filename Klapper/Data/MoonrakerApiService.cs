@@ -3,7 +3,6 @@ using Klapper.Classes;
 using Klapper.Shared.Components;
 using Newtonsoft.Json.Linq;
 using RestSharp;
-using SpanJson;
 
 namespace Klapper.Data;
 
@@ -12,11 +11,14 @@ public class MoonrakerApiService
     private readonly RestClient _client;
     private readonly ILogger<MoonrakerApiService> _logger;
     private readonly IConfiguration _configuration;
+    
+    public List<(string, string, string)> Log { get; }
 
     public MoonrakerApiService(ILogger<MoonrakerApiService> logger, IConfiguration configuration)
     {
         _logger = logger;
         _configuration = configuration;
+        Log = new List<(string, string, string)>();
         try
         {
             _client = new RestClient(_configuration.GetValue<string>("HostSettings:Address"));
@@ -40,21 +42,10 @@ public class MoonrakerApiService
     public async Task<(bool, string)> RunGCode(string query)
     {
         var request = new RestRequest($"/printer/gcode/script?script={query}", Method.Post);
-        var result = await _client.ExecuteAsync(request);
-
-        var response = string.Empty;
-
-        if (!result.IsSuccessful)
-        {
-            var rx = new Regex(@"{(.*?)}");
-            var responseClass = System.Text.Json.JsonSerializer.Deserialize<ErrorRoot>(result.Content);
-            response = rx.Match(responseClass.error.traceback).Groups[1].Value;
-        }
-        
-        return (result.IsSuccessful, response);
+        return await LaunchPostRequest(request, query);
     }
-    
-    public async Task<bool> PauseCancelResumePrint(int code)
+
+    public async Task<(bool, string)> PauseCancelResumePrint(int code)
     {
         var requestUrl = code switch
         {
@@ -65,8 +56,7 @@ public class MoonrakerApiService
         };
 
         var request = new RestRequest(requestUrl, Method.Post);
-        var result = await _client.ExecuteAsync(request);
-        return result.IsSuccessful;
+        return await LaunchPostRequest(request);
     }
 
     public async Task<bool> PrintFile(string query)
@@ -141,6 +131,25 @@ public class MoonrakerApiService
 
         return deserializedClass;
     }
+    
+    private async Task<(bool, string)> LaunchPostRequest(RestRequest request, string command = "")
+        {
+            Log.Add(("Client", "Information", string.IsNullOrEmpty(command) ? request.Resource : command));
+            
+            var result = await _client.ExecuteAsync(request);
+
+            var response = string.Empty;
+
+            if (!result.IsSuccessful)
+            {
+                var rx = new Regex(@"{(.*?)}");
+                var responseClass = System.Text.Json.JsonSerializer.Deserialize<ErrorRoot>(result.Content);
+                response = rx.Match(responseClass.error.traceback).Groups[1].Value;
+                Log.Add(("Server", "Error", response));
+            }
+            
+            return (result.IsSuccessful, response);
+        }
 
     private static JToken? Filter(JObject jObject, string filter)
     {

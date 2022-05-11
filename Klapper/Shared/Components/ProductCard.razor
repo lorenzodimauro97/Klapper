@@ -20,7 +20,7 @@
                 <div class="card-body">
                     <p class="card-text">
                         Target Temperature:
-                        <RadzenNumeric @bind-value="@data.target" TValue="double" Min="0" Max="300" Change=@(OnPowerChange) Class="w-100"/>
+                        <RadzenNumeric @bind-value="@data.target" TValue="double" Min="0" Max="999" Change=@(OnPowerChange) Class="w-100"/>
                     </p>
                 </div>
             }
