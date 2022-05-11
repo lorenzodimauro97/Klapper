@@ -44,6 +44,12 @@ public class MoonrakerApiService
         var request = new RestRequest($"/printer/gcode/script?script={query}", Method.Post);
         return await LaunchPostRequest(request, query);
     }
+    
+    public async Task<(bool, string)> GetGCodeList()
+    {
+        var request = new RestRequest($"/printer/gcode/help", Method.Post);
+        return await LaunchPostRequest(request, "HELP",true);
+    }
 
     public async Task<(bool, string)> PauseCancelResumePrint(int code)
     {
@@ -132,7 +138,7 @@ public class MoonrakerApiService
         return deserializedClass;
     }
     
-    private async Task<(bool, string)> LaunchPostRequest(RestRequest request, string command = "")
+    private async Task<(bool, string)> LaunchPostRequest(RestRequest request, string command = "", bool logResponse = false)
         {
             Log.Add(("Client", "Information", string.IsNullOrEmpty(command) ? request.Resource : command));
             
@@ -147,6 +153,9 @@ public class MoonrakerApiService
                 response = rx.Match(responseClass.error.traceback).Groups[1].Value;
                 Log.Add(("Server", "Error", response));
             }
+
+            if (logResponse) Log.Add(("Server", "Information", result.Content));
+
             
             return (result.IsSuccessful, response);
         }

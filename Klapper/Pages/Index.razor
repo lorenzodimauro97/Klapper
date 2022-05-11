@@ -8,7 +8,7 @@
 
 <PageTitle>Index</PageTitle>
 
-@if (StatusService.KlipperIsRunning)
+@if (StatusService.KlipperIsRunning && StatusService.KlippyIsReady)
 {
     <PrinterStatus OnPausePrint="async () => { await Api.PauseCancelResumePrint(0); }"
                    OnCancelPrint="async () => { await Api.PauseCancelResumePrint(1); }"
