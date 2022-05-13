@@ -1,3 +1,5 @@
+using System.Net;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using Klapper.Classes;
 using Klapper.Shared.Components;
@@ -9,19 +11,23 @@ namespace Klapper.Data;
 public class MoonrakerApiService
 {
     private readonly RestClient _client;
-    private readonly ILogger<MoonrakerApiService> _logger;
     private readonly IConfiguration _configuration;
-    
-    public List<(string, string, string)> Log { get; }
+    private readonly ILogger<MoonrakerApiService> _logger;
 
     public MoonrakerApiService(ILogger<MoonrakerApiService> logger, IConfiguration configuration)
     {
         _logger = logger;
         _configuration = configuration;
         Log = new List<(string, string, string)>();
+
+        BaseUrl = _configuration.GetValue<string>("HostSettings:Address");
         try
         {
-            _client = new RestClient(_configuration.GetValue<string>("HostSettings:Address"));
+            _client = new RestClient(new RestClientOptions
+            {
+                BaseUrl = new Uri(BaseUrl),
+                MaxTimeout = 300000
+            });
         }
         catch (Exception ex)
         {
@@ -31,6 +37,10 @@ public class MoonrakerApiService
 
         _client.UseSerializer<SpanJsonSerializationAdapter>();
     }
+
+    public string BaseUrl { get; }
+
+    public List<(string, string, string)> Log { get; }
 
     /*public async Task<MoonrakerObjectListClass> GetFullObjectList()
     {
@@ -44,11 +54,11 @@ public class MoonrakerApiService
         var request = new RestRequest($"/printer/gcode/script?script={query}", Method.Post);
         return await LaunchPostRequest(request, query);
     }
-    
+
     public async Task<(bool, string)> GetGCodeList()
     {
-        var request = new RestRequest($"/printer/gcode/help", Method.Post);
-        return await LaunchPostRequest(request, "HELP",true);
+        var request = new RestRequest("/printer/gcode/help", Method.Post);
+        return await LaunchPostRequest(request, "HELP", true);
     }
 
     public async Task<(bool, string)> PauseCancelResumePrint(int code)
@@ -77,7 +87,7 @@ public class MoonrakerApiService
         var request = new RestRequest("/server/files/list");
         return await LaunchGetRequest<GCodeFileRoot>(request, false);
     }
-    
+
     public async Task<byte[]> GetImage(string query)
     {
         var request = new RestRequest($"/server/files/gcodes/{query}");
@@ -85,7 +95,7 @@ public class MoonrakerApiService
 
         return result;
     }
-    
+
     public async Task<GCodeFileDetailsRoot> GetFileDetails(string query)
     {
         var request = new RestRequest($"/server/files/metadata?filename={query}");
@@ -122,43 +132,48 @@ public class MoonrakerApiService
         var executeRequest = await _client.ExecuteAsync(request);
         var requestResult = executeRequest.Content;
 
-        if (!executeRequest.IsSuccessful)
-        {
-            throw new BadHttpRequestException(executeRequest.StatusCode.ToString());
-        }
+        if (!executeRequest.IsSuccessful) throw new BadHttpRequestException(executeRequest.StatusCode.ToString());
 
         if (filter)
         {
             var jo = JObject.Parse(requestResult);
             requestResult = Filter(jo, filterQuery).ToString();
         }
-        
-        var deserializedClass = System.Text.Json.JsonSerializer.Deserialize<T>(requestResult);
+
+        var deserializedClass = JsonSerializer.Deserialize<T>(requestResult);
 
         return deserializedClass;
     }
-    
-    private async Task<(bool, string)> LaunchPostRequest(RestRequest request, string command = "", bool logResponse = false)
+
+    private async Task<(bool, string)> LaunchPostRequest(RestRequest request, string command = "",
+        bool logResponse = false)
+    {
+        Log.Add(("Client", "Information", string.IsNullOrEmpty(command) ? request.Resource : command));
+
+        var result = await _client.ExecuteAsync(request);
+
+        var response = string.Empty;
+
+        if (!result.IsSuccessful)
         {
-            Log.Add(("Client", "Information", string.IsNullOrEmpty(command) ? request.Resource : command));
-            
-            var result = await _client.ExecuteAsync(request);
-
-            var response = string.Empty;
-
-            if (!result.IsSuccessful)
+            if (result.StatusCode == HttpStatusCode.BadRequest)
             {
                 var rx = new Regex(@"{(.*?)}");
-                var responseClass = System.Text.Json.JsonSerializer.Deserialize<ErrorRoot>(result.Content);
+                var responseClass = JsonSerializer.Deserialize<ErrorRoot>(result.Content);
                 response = rx.Match(responseClass.error.traceback).Groups[1].Value;
                 Log.Add(("Server", "Error", response));
             }
-
-            if (logResponse) Log.Add(("Server", "Information", result.Content));
-
-            
-            return (result.IsSuccessful, response);
+            else
+            {
+                Log.Add(("Server", "Error", $"Server Returned Code {result.StatusCode}"));
+            }
         }
+
+        if (logResponse) Log.Add(("Server", "Information", result.Content));
+
+
+        return (result.IsSuccessful, response);
+    }
 
     private static JToken? Filter(JObject jObject, string filter)
     {
@@ -184,5 +199,14 @@ public class MoonrakerApiService
     {
         var request = new RestRequest($"/server/files/gcodes/{file}", Method.Delete);
         return await LaunchPostRequest(request, $"DELETE {file}");
+    }
+
+    public async Task<(bool, string)> UploadFile(MultipartFormDataContent content, string fileName)
+    {
+        var request = new RestRequest("/server/files/upload", Method.Post);
+        request.AddHeader("Content-Type", "multipart/form-data");
+        request.AddFile("file", await content.ReadAsByteArrayAsync(), fileName);
+        request.AlwaysMultipartFormData = true;
+        return await LaunchPostRequest(request, $"UPLOAD {fileName}");
     }
 }

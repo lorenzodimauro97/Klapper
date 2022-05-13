@@ -1,26 +1,32 @@
 @using Klapper.Data
 @using Klapper.Classes
+@using System.Net.Http.Headers
 @inject MoonrakerApiService Api
 @inject NotificationService Toast
 @inject DialogService DialogService
 
 
 <div class="row pb-2">
-    <button class="btn btn-primary" type="button" @onclick="RefreshData" disabled="@IsRefreshingData" style="width: 40px">
-        <span class="oi oi-reload" aria-hidden="true"></span>
-    </button>
+    <div class="col-auto">
+        <button class="btn btn-primary" type="button" @onclick="RefreshData" disabled="@IsRefreshingData" style="width: 40px">
+            <span class="oi oi-reload" aria-hidden="true"></span>
+        </button>
 
         <button class="btn btn-primary" type="button" style="width: 40px;" @onclick="ShowStartPrintDialog" disabled="@(SelectedGCodeFile == null)">
             <span class="oi oi-print" aria-hidden="true"></span>
         </button>
-    
-    <button class="btn btn-primary" type="button" style="width: 40px;" @onclick="ShowDeleteFileDialog" disabled="@(SelectedGCodeFile == null)">
-        <span class="oi oi-trash" aria-hidden="true"></span>
-    </button>
 
-    <button class="btn btn-primary" type="button" style="width: 40px;" disabled="@(SelectedGCodeFile == null)">
-        <span class="oi oi-data-transfer-download" aria-hidden="true"></span>
-    </button>
+        <button class="btn btn-primary" type="button" style="width: 40px;" @onclick="ShowDeleteFileDialog" disabled="@(SelectedGCodeFile == null)">
+            <span class="oi oi-trash" aria-hidden="true"></span>
+        </button>
+
+        <button class="btn btn-primary" type="button" style="width: 40px;" disabled="@(SelectedGCodeFile == null)">
+            <span class="oi oi-data-transfer-download" aria-hidden="true"></span>
+        </button>
+    </div>
+    <div class="col-auto">
+        <InputFile disabled="@IsUploading" OnChange="@LoadFiles" multiple/>
+    </div>
 </div>
 <div class="row">
     @if (GCodeFiles?.Count > 0)
@@ -51,6 +57,8 @@
 
     private bool IsRefreshingData { get; set; }
 
+    public bool IsUploading { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         await RefreshData();
@@ -67,26 +75,14 @@
             GCodeFiles = (await Api.GetFiles()).result;
             GCodeFiles.Sort((a, b) => b.modified.CompareTo(a.modified));
 
-            Toast.Notify(new NotificationMessage
-            {
-                Severity = NotificationSeverity.Success,
-                Detail = $"Loaded {GCodeFiles.Count} files",
-                Summary = "Success",
-                Duration = 7000
-            });
+            ToastNotification.Notificate(Toast, true, $"Loaded {GCodeFiles.Count} files");
 
             await InvokeAsync(StateHasChanged);
         }
 
         catch (Exception ex)
         {
-            Toast.Notify(new NotificationMessage
-            {
-                Severity = NotificationSeverity.Error,
-                Detail = $"Error! {ex.Message}",
-                Summary = "Error",
-                Duration = 7000
-            });
+            ToastNotification.Notificate(Toast, false, badMessage: $"Error! {ex.Message}");
         }
         finally
         {
@@ -105,20 +101,20 @@
 
         var result = await DialogService.OpenAsync("Print File", ds =>
             @<FileDetailsDialog File="@detailedFile"
-                          OnStartPrint="async () => { ds.Close(true); await OnPrintFile(detailedFile);}"
-                          OnCancel="() => ds.Close(false)">
-            </FileDetailsDialog>, new DialogOptions() { Width = "50%", Height = "auto" });
+                                OnStartPrint="async () => { ds.Close(true); await OnPrintFile(detailedFile);}"
+                                OnCancel="() => ds.Close(false)">
+            </FileDetailsDialog>, new DialogOptions { Width = "50%", Height = "auto" });
     }
-    
+
     private async Task ShowDeleteFileDialog()
     {
         var detailedFile = (await Api.GetFileDetails(SelectedGCodeFile.path)).result;
 
         var result = await DialogService.OpenAsync("Print File", ds =>
             @<FileDeleteDialog File="@detailedFile"
-                          OnDelete="async () => { ds.Close(true); await OnDeleteFile(detailedFile);}"
-                          OnCancel="() => ds.Close(false)">
-            </FileDeleteDialog>, new DialogOptions() { Width = "50%", Height = "auto" });
+                               OnDelete="async () => { ds.Close(true); await OnDeleteFile(detailedFile);}"
+                               OnCancel="() => ds.Close(false)">
+            </FileDeleteDialog>, new DialogOptions { Width = "50%", Height = "auto" });
     }
 
     private async Task OnPrintFile(GCodeFileDetails file)
@@ -126,32 +122,20 @@
         try
         {
             var result = await Api.PrintFile(file.filename);
-            Toast.Notify(new NotificationMessage
-            {
-                Severity = result ? NotificationSeverity.Success : NotificationSeverity.Error,
-                Detail = result ? "Print Started" : "Failed to start print",
-                Summary = result ? "Success" : "Error",
-                Duration = 7000
-            });
+            ToastNotification.Notificate(Toast, result, "Print Started", "Failed to start print");
         }
 
         catch (Exception)
         {
         }
     }
-    
+
     private async Task OnDeleteFile(GCodeFileDetails file)
     {
         try
         {
             var result = await Api.DeleteFile(file.filename);
-            Toast.Notify(new NotificationMessage
-            {
-                Severity = result.Item1 ? NotificationSeverity.Success : NotificationSeverity.Error,
-                Detail = result.Item1 ? $"{file.filename} Deleted" : $"Failed to delete {file.filename}",
-                Summary = result.Item1 ? "Success" : "Error",
-                Duration = 7000
-            });
+            ToastNotification.Notificate(Toast, result.Item1, $"{file.filename} Deleted", $"Failed to delete {file.filename}");
 
             if (result.Item1) await RefreshData();
         }
@@ -159,6 +143,31 @@
         catch (Exception)
         {
         }
+    }
+
+    private async Task LoadFiles(InputFileChangeEventArgs e)
+    {
+        var files = e.GetMultipleFiles();
+
+        if (files.Count == 0) return;
+
+        IsUploading = true;
+
+        foreach (var file in files)
+        {
+            if (file == null) continue;
+
+            await using var ms = file.OpenReadStream(file.Size);
+            var content = new MultipartFormDataContent();
+            content.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data");
+            content.Add(new StreamContent(ms, Convert.ToInt32(file.Size)), "image", file.Name);
+            var result = await Api.UploadFile(content, file.Name);
+            ToastNotification.Notificate(Toast, result.Item1, $"{file.Name} Uploaded", $"Failed to Upload {file.Name}, Error: {result.Item2}");
+        }
+
+        await RefreshData();
+
+        IsUploading = false;
     }
 
 }
