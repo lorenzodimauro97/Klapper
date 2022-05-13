@@ -30,7 +30,7 @@ Description=Starts Klapper Kestrel server on startup
  WorkingDirectory=$INSERTKLAPPERDIRECTORYHERE
 ExecStart=$INSERTKLAPPERDIRECTORYHERE/Klapper
 Restart=always
-# Restart service after 10 seconds if the dotnet service crashes:
+#Restart service after 10 seconds if the dotnet service crashes:
 RestartSec=10
 KillSignal=SIGINT
 SyslogIdentifier=klapper-identifier
