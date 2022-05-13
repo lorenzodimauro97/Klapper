@@ -30,8 +30,9 @@ public class GCodeFileDetails
     public double first_layer_bed_temp { get; set; }
     public double filament_total { get; set; }
     public List<Thumbnail>? thumbnails { get; set; }
-    public double print_start_time { get; set; }
-    public string job_id { get; set; }
+
+    public double? print_start_time { get; set; }
+    public string? job_id { get; set; }
     public string filename { get; set; }
 
     public string GetEstimatedTime()

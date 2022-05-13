@@ -1,4 +1,5 @@
 @using Klapper.Data
+@using System.Timers
 @inject MoonrakerApiService Api
 
 <div class="container content">
@@ -8,12 +9,12 @@
                 <div class="card-header">Terminal</div>
                 <div class="card-body height3" style=" height: 400px; overflow: scroll">
                     <ul class="chat-list">
-						
+
                         @foreach (var log in Api.Log)
                         {
                             var messageClass =
                                 log.Item1 == "Client" ? "out" : "in";
-							
+
                             <li class=@messageClass>
                                 <div class="chat-body">
                                     <div class="chat-message">
@@ -37,6 +38,7 @@
 @code
 {
     private string Command { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         SetAutoRefresh();
@@ -45,11 +47,8 @@
 
     private void SetAutoRefresh()
     {
-        var timer = new System.Timers.Timer(1000);
-        timer.Elapsed += async (sender, args) =>
-        {
-            await InvokeAsync(StateHasChanged);
-        };
+        var timer = new Timer(1000);
+        timer.Elapsed += async (sender, args) => { await InvokeAsync(StateHasChanged); };
         timer.AutoReset = true;
         timer.Enabled = true;
     }
@@ -59,7 +58,7 @@
         if (Command.Contains("HELP", StringComparison.InvariantCultureIgnoreCase))
             await Api.GetGCodeList();
         else
-        await Api.RunGCode(Command);
+            await Api.RunGCode(Command);
         Command = string.Empty;
     }
 }

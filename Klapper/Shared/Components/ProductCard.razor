@@ -14,7 +14,7 @@
                 {
                     <p class="card-text">Power: @data.GetPowerPercent().ToString(@"n2")%</p>
                 }
-                </div>
+            </div>
             @if (data.IsHeater)
             {
                 <div class="card-body">
@@ -32,7 +32,7 @@
 
     [Parameter]
     public string Name { get; set; }
-    
+
     public HeatableSensible data;
 
     protected override async Task OnInitializedAsync()
@@ -70,13 +70,7 @@
     {
         var result = await Api.RunGCode($"SET_HEATER_TEMPERATURE HEATER={Name} TARGET={args}");
 
-        Toast.Notify(new NotificationMessage
-        {
-            Severity = result.Item1 ? NotificationSeverity.Success : NotificationSeverity.Error,
-            Detail = result.Item1 ? "Temperature Change Successful" : result.Item2,
-            Summary = result.Item1 ? "Success" : "Error",
-            Duration = 7000
-        });
+        ToastNotification.Notificate(Toast, result.Item1, "Temperature changed successfully", result.Item2);
     }
 
 }

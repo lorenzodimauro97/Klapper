@@ -84,6 +84,7 @@ public class VirtualSdcard
 {
     public string path { get; set; }
     public double progress { get; set; }
+    public int GetProgress => (int)(progress * 100);
     public double file_position { get; set; }
     public bool is_active { get; set; }
     public object file_path { get; set; }
