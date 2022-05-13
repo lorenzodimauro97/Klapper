@@ -6,7 +6,7 @@ Because I don't know Vue and I really don't want to learn it. This is also a gre
 
 # What's the end goal here?
 The idea is to implement everything Fluidd and Moonraker has, plus:
-- Custom real-time 3D GCode Viewer with nozzle position
+- Custom 3D GCode viewer with realtime nozzle position
 
 # What's missing, currently?
 - A lot of simple information (Eg: Number of layers, Flow Rate)
