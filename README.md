@@ -2,10 +2,11 @@
 Klapper is a free, open-source and not Vue-based Klipper web interface for managing your 3d printer.
 
 # Why
-Because I don't know Vue and I really don't want to learn it. Also want to get my hands dirty on Blazor.
+Because I don't know Vue and I really don't want to learn it. This is also a great opportunity to learn a bit more on how to develop a web application of this relatively small magnitude, and a great opportunity to learn Blazor, too!
 
 # What's the end goal here?
-The idea is to implement everything Fluidd and Moonraker has, and some more!
+The idea is to implement everything Fluidd and Moonraker has, plus:
+- Custom real-time 3D GCode Viewer with nozzle position
 
 # What's missing, currently?
 - A lot of simple information (Eg: Number of layers, Flow Rate)
