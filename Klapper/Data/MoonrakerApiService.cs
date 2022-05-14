@@ -82,9 +82,9 @@ public class MoonrakerApiService
         return result.IsSuccessful;
     }
 
-    public async Task<GCodeFileRoot> GetFiles()
+    public async Task<GCodeFileRoot> GetFiles(string query)
     {
-        var request = new RestRequest("/server/files/list");
+        var request = new RestRequest($"/server/files/list?root={query}");
         return await LaunchGetRequest<GCodeFileRoot>(request, false);
     }
 
@@ -189,17 +189,17 @@ public class MoonrakerApiService
         return await LaunchGetRequest<PrinterStatusRoot>(request, false);
     }
 
-    public async Task<(bool, string)> DeleteFile(string file)
+    public async Task<(bool, string)> DeleteFile(string file, string root)
     {
-        var request = new RestRequest($"/server/files/gcodes/{file}", Method.Delete);
+        var request = new RestRequest($"/server/files/{root}/{file}", Method.Delete);
         return await LaunchPostRequest(request, $"DELETE {file}");
     }
 
-    public async Task<(bool, string)> UploadFile(MultipartFormDataContent content, string fileName)
+    public async Task<(bool, string)> UploadFile(byte[] content, string fileName, string root)
     {
         var request = new RestRequest("/server/files/upload", Method.Post);
-        request.AddHeader("Content-Type", "multipart/form-data");
-        request.AddFile("file", await content.ReadAsByteArrayAsync(), fileName);
+        request.AddParameter("root", root);
+        request.AddFile("file", content, fileName);
         request.AlwaysMultipartFormData = true;
         return await LaunchPostRequest(request, $"UPLOAD {fileName}");
     }

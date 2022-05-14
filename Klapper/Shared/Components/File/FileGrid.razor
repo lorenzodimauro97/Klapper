@@ -6,48 +6,35 @@
 @inject DialogService DialogService
 
 
-    <div class="row pb-2">
-        <div class="col-auto">
-            <button class="btn btn-primary" type="button" @onclick="RefreshData" disabled="@IsRefreshingData" style="width: 40px">
-                <span class="oi oi-reload" aria-hidden="true"></span>
-            </button>
-
-            <button class="btn btn-primary" type="button" style="width: 40px;" @onclick="ShowStartPrintDialog" disabled="@(SelectedGCodeFile == null)">
-                <span class="oi oi-print" aria-hidden="true"></span>
-            </button>
-
-            <button class="btn btn-primary" type="button" style="width: 40px;" @onclick="ShowDeleteFileDialog" disabled="@(SelectedGCodeFile == null)">
-                <span class="oi oi-trash" aria-hidden="true"></span>
-            </button>
-
-            <button class="btn btn-primary" type="button" style="width: 40px;" disabled="@(SelectedGCodeFile == null)">
-                <span class="oi oi-data-transfer-download" aria-hidden="true"></span>
-            </button>
-        </div>
-        <div class="col-auto">
-            <InputFile disabled="@IsUploading" OnChange="@LoadFiles" multiple/>
-        </div>
-    </div>
-    <div class="row">
-        @if (GCodeFiles?.Count > 0)
-        {
-            <RadzenDataGrid AllowFiltering="true" AllowPaging="true" PageSize="5" FilterMode="FilterMode.SimpleWithMenu" AllowSorting="true" Data="@GCodeFiles" TItem="GCodeFile" RowSelect="SelectGCodeFile">
-                <Columns>
-                    <RadzenDataGridColumn TItem="GCodeFile" Property="path" Title="GCode File Name" Frozen="true" Width="140px"/>
-                    <RadzenDataGridColumn TItem="GCodeFile" Property="size" Title="Size" Width="140px">
-                        <Template Context="data">
-                            <div>@(data.size / 1000) KB</div>
-                        </Template>
-                    </RadzenDataGridColumn>
-                    <RadzenDataGridColumn TItem="GCodeFile" Property="modified" Title="Last Modified" Width="200px">
-                        <Template Context="data">
-                            <div>@(DateTime.UnixEpoch.AddSeconds(data.modified))</div>
-                        </Template>
-                    </RadzenDataGridColumn>
-                </Columns>
-            </RadzenDataGrid>
-        }
-    </div>
+<FileCrudOperations
+    ButtonConfiguration="0"
+    DisableCrudButtons="SelectedGCodeFile == null"
+    DisableRefreshButton="IsRefreshingData"
+    DisableUploadButton="IsUploading"
+    OnLaunchPrintDialog="async () => await ShowStartPrintDialog()"
+    RefreshData="async () => await RefreshData()"
+    OnDeleteFileDialog="async () => await ShowDeleteFileDialog()"
+    OnUpload="async upload => await UploadFiles(upload)"/>
+<div class="row">
+    @if (GCodeFiles?.Count > 0)
+    {
+        <RadzenDataGrid AllowFiltering="true" AllowPaging="true" PageSize="8" FilterMode="FilterMode.SimpleWithMenu" AllowSorting="true" Data="@GCodeFiles" TItem="GCodeFile" RowSelect="SelectGCodeFile">
+            <Columns>
+                <RadzenDataGridColumn TItem="GCodeFile" Property="path" Title="GCode File Name" Frozen="true" Width="140px"/>
+                <RadzenDataGridColumn TItem="GCodeFile" Property="size" Title="Size" Width="140px">
+                    <Template Context="data">
+                        <div>@(data.size / 1000) KB</div>
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="GCodeFile" Property="modified" Title="Last Modified" Width="200px">
+                    <Template Context="data">
+                        <div>@(DateTime.UnixEpoch.AddSeconds(data.modified))</div>
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    }
+</div>
 
 @code {
 
@@ -71,16 +58,14 @@
         SelectedGCodeFile = null;
 
         var isReloadingData = GCodeFiles.Count > 0;
-        
+
         GCodeFiles.Clear();
         try
         {
-            GCodeFiles = (await Api.GetFiles()).result;
+            GCodeFiles = (await Api.GetFiles("gcodes")).result;
             GCodeFiles.Sort((a, b) => b.modified.CompareTo(a.modified));
 
-            if(isReloadingData) ToastNotification.Notificate(Toast, true, $"Loaded {GCodeFiles.Count} files");
-
-            await InvokeAsync(StateHasChanged);
+            if (isReloadingData) ToastNotification.Notificate(Toast, true, $"Loaded {GCodeFiles.Count} files");
         }
 
         catch (Exception ex)
@@ -90,6 +75,7 @@
         finally
         {
             IsRefreshingData = false;
+            await InvokeAsync(StateHasChanged);
         }
     }
 
@@ -137,7 +123,7 @@
     {
         try
         {
-            var result = await Api.DeleteFile(file.filename);
+            var result = await Api.DeleteFile(file.filename, "gcodes");
             ToastNotification.Notificate(Toast, result.Item1, $"{file.filename} Deleted", $"Failed to delete {file.filename}");
 
             if (result.Item1) await RefreshData();
@@ -148,7 +134,7 @@
         }
     }
 
-    private async Task LoadFiles(InputFileChangeEventArgs e)
+    private async Task UploadFiles(InputFileChangeEventArgs e)
     {
         var files = e.GetMultipleFiles();
 
@@ -161,10 +147,12 @@
             if (file == null) continue;
 
             await using var ms = file.OpenReadStream(file.Size);
-            var content = new MultipartFormDataContent();
-            content.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data");
-            content.Add(new StreamContent(ms, Convert.ToInt32(file.Size)), "image", file.Name);
-            var result = await Api.UploadFile(content, file.Name);
+
+            var buffer = new byte[file.Size];
+
+            await ms.ReadAsync(buffer);
+            
+            var result = await Api.UploadFile(buffer, file.Name, "gcodes");
             ToastNotification.Notificate(Toast, result.Item1, $"{file.Name} Uploaded", $"Failed to Upload {file.Name}, Error: {result.Item2}");
         }
 

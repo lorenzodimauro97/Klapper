@@ -1,0 +1,47 @@
+<div class="row pb-2">
+    <div class="col-auto">
+        <button class="btn btn-primary" type="button" @onclick="RefreshData" disabled="@DisableRefreshButton" style="width: 40px">
+            <span class="oi oi-reload" aria-hidden="true"></span>
+        </button>
+
+        @switch (ButtonConfiguration)
+        {
+            case 0:
+                <button class="btn btn-primary" type="button" style="width: 40px;" @onclick="@OnLaunchPrintDialog" disabled="@DisableCrudButtons">
+                    <span class="oi oi-print" aria-hidden="true"></span>
+                </button>
+                break;
+            case 1:
+                <button class="btn btn-primary" type="button" style="width: 40px;" @onclick="@OnLaunchPrintDialog" disabled="@DisableCrudButtons">
+                    <span class="oi oi-pencil" aria-hidden="true"></span>
+                </button>
+                break;
+        }
+        <button class="btn btn-primary" type="button" style="width: 40px;" @onclick="OnDeleteFileDialog" disabled="@DisableCrudButtons">
+            <span class="oi oi-trash" aria-hidden="true"></span>
+        </button>
+    </div>
+    <div class="col-auto">
+        <InputFile disabled="@DisableUploadButton" OnChange="upload => OnUpload(upload)" multiple/>
+    </div>
+</div>
+
+@code
+{
+    [Parameter]
+    public Action RefreshData { get; set; }
+
+    [Parameter]
+    public Action OnLaunchPrintDialog { get; set; }
+
+    [Parameter]
+    public Action OnDeleteFileDialog { get; set; }
+
+    [Parameter]
+    public Action<InputFileChangeEventArgs> OnUpload { get; set; }
+    
+    [Parameter] public bool DisableRefreshButton { get; set; }
+    [Parameter] public bool DisableUploadButton { get; set; }
+    [Parameter] public bool DisableCrudButtons { get; set; }
+    [Parameter] public int ButtonConfiguration { get; set; }
+}

@@ -1,6 +1,166 @@
 @page "/PrinterConfiguration"
 @using Klapper.Data
-@using Klapper.Shared.Components.Status
-@inject PrinterStatusService PrinterStatus
+@using Klapper.Classes
+@using Klapper.Shared.Components.File
+@using Microsoft.Net.Http.Headers
+@using ContentDispositionHeaderValue = System.Net.Http.Headers.ContentDispositionHeaderValue
+@inject MoonrakerApiService Api
+@inject NotificationService Toast
+@inject DialogService DialogService
 
 <PageTitle>Klapper - Printer Configuration</PageTitle>
+
+<FileCrudOperations
+    ButtonConfiguration="1"
+    DisableCrudButtons="SelectedFiles == null"
+    DisableRefreshButton="IsRefreshingData"
+    DisableUploadButton="IsUploading"
+    RefreshData="async () => await RefreshData()"
+    OnUpload="async upload => await UploadFiles(upload)"/>
+<div class="row">
+    @if (Files?.Count > 0)
+    {
+        <RadzenDataGrid AllowFiltering="true" AllowPaging="true" PageSize="8" FilterMode="FilterMode.SimpleWithMenu" AllowSorting="true" Data="@Files" TItem="GCodeFile" RowSelect="SelectGCodeFile">
+            <Columns>
+                <RadzenDataGridColumn TItem="GCodeFile" Property="path" Title="GCode File Name" Frozen="true" Width="140px"/>
+                <RadzenDataGridColumn TItem="GCodeFile" Property="size" Title="Size" Width="140px">
+                    <Template Context="data">
+                        <div>@(data.size / 1000) KB</div>
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="GCodeFile" Property="modified" Title="Last Modified" Width="200px">
+                    <Template Context="data">
+                        <div>@(DateTime.UnixEpoch.AddSeconds(data.modified))</div>
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    }
+</div>
+
+@code {
+
+    private List<GCodeFile> Files { get; set; } = new();
+
+    private GCodeFile SelectedFiles { get; set; }
+
+    private bool IsRefreshingData { get; set; }
+
+    public bool IsUploading { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshData();
+        await base.OnInitializedAsync();
+    }
+
+    private async Task RefreshData()
+    {
+        IsRefreshingData = true;
+        SelectedFiles = null;
+
+        var isReloadingData = Files.Count > 0;
+
+        Files.Clear();
+        try
+        {
+            Files = (await Api.GetFiles("config")).result;
+            Files.Sort((a, b) => b.modified.CompareTo(a.modified));
+
+            if (isReloadingData) ToastNotification.Notificate(Toast, true, $"Loaded {Files.Count} files");
+        }
+
+        catch (Exception ex)
+        {
+            ToastNotification.Notificate(Toast, false, badMessage: $"Error! {ex.Message}");
+        }
+        finally
+        {
+            IsRefreshingData = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task SelectGCodeFile(GCodeFile file)
+    {
+        SelectedFiles = file;
+    }
+
+    /*private async Task ShowStartPrintDialog()
+    {
+        var detailedFile = (await Api.GetFileDetails(SelectedFiles.path)).result;
+
+        var result = await DialogService.OpenAsync("Print File", ds =>
+            @<FileDetailsDialog File="@detailedFile"
+                                OnStartPrint="async () => { ds.Close(true); await OnPrintFile(detailedFile);}"
+                                OnCancel="() => ds.Close(false)">
+            </FileDetailsDialog>, new DialogOptions { Width = "50%", Height = "auto" });
+    }
+
+    private async Task ShowDeleteFileDialog()
+    {
+        var detailedFile = (await Api.GetFileDetails(SelectedFiles.path)).result;
+
+        var result = await DialogService.OpenAsync("Print File", ds =>
+            @<FileDeleteDialog File="@detailedFile"
+                               OnDelete="async () => { ds.Close(true); await OnDeleteFile(detailedFile);}"
+                               OnCancel="() => ds.Close(false)">
+            </FileDeleteDialog>, new DialogOptions { Width = "50%", Height = "auto" });
+    }*/
+
+    /*private async Task OnPrintFile(GCodeFileDetails file)
+    {
+        try
+        {
+            var result = await Api.PrintFile(file.filename);
+            ToastNotification.Notificate(Toast, result, "Print Started", "Failed to start print");
+        }
+
+        catch (Exception)
+        {
+        }
+    }*/
+
+    private async Task OnDeleteFile(GCodeFileDetails file)
+    {
+        try
+        {
+            var result = await Api.DeleteFile(file.filename, "config");
+            ToastNotification.Notificate(Toast, result.Item1, $"{file.filename} Deleted", $"Failed to delete {file.filename}");
+
+            if (result.Item1) await RefreshData();
+        }
+
+        catch (Exception)
+        {
+        }
+    }
+
+    private async Task UploadFiles(InputFileChangeEventArgs e)
+    {
+        var files = e.GetMultipleFiles();
+
+        if (files.Count == 0) return;
+
+        IsUploading = true;
+
+        foreach (var file in files)
+        {
+                if (file == null) continue;
+
+                await using var ms = file.OpenReadStream(file.Size);
+
+                var buffer = new byte[file.Size];
+
+                await ms.ReadAsync(buffer);
+            
+                var result = await Api.UploadFile(buffer, file.Name, "config");
+            ToastNotification.Notificate(Toast, result.Item1, $"{file.Name} Uploaded", $"Failed to Upload {file.Name}, Error: {result.Item2}");
+        }
+
+        await RefreshData();
+
+        IsUploading = false;
+    }
+
+}
