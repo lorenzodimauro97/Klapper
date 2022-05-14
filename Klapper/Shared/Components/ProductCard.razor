@@ -58,7 +58,7 @@
     {
         try
         {
-            data = await Api.GetISensible(Name);
+            data = await Api.GetObject<HeatableSensible>(Name, true);
         }
         catch (Exception)
         {

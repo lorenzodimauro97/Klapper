@@ -24,7 +24,7 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-md-3">
+                            <div class="col-md-2 me-2">
                                 <CircularProgressBar ProgressValue="@progress"></CircularProgressBar>
                             </div>
                             @if (StatusService.PrintFileDetails != null)
@@ -34,7 +34,7 @@
                                     <div>
                                         <h6>
                                             Layer
-                                            <strong>@StatusService.PrinterStatus.status.virtual_sdcard.file_position</strong> of
+                                            <strong>@StatusService.PrintFileDetails.GetLayer(StatusService.GcodeMove.gcode_position[2])</strong> of
                                             <strong>@StatusService.PrintFileDetails.layer_count</strong>
                                         </h6>
                                     </div>
@@ -45,12 +45,27 @@
                                             <strong>@StatusService.PrintFileDetails.GetEstimatedTime()</strong> (estimated)
                                         </h6>
                                     </div>
+                                    <div>
+                                        <h6>
+                                            Flow Rate:
+                                            <strong></strong> Out of
+                                            <strong></strong> (estimated)
+                                        </h6>
+                                    </div>
+                                    <div>
+                                        <h6>
+                                            Speed:
+                                            <strong>@(StatusService.GcodeMove?.speed * StatusService.GcodeMove?.speed_factor / 60)</strong> mm/s
+                                        </h6>
+                                    </div>
                                 </div>
                             }
                             @if (!string.IsNullOrEmpty(StatusService.PrintFileDetails.Base64Image))
                             {
-                                <div class="col-md-2">
-                                    <img src="data:image/bmp;base64, @(StatusService.PrintFileDetails.Base64Image)" style="width: 100px; height: 100px" alt=""/>
+                                <div class="col-md-2 text-center">
+                                    <div class="d-flex flex-column flex-lg-row">
+                                        <img src="data:image/bmp;base64, @(StatusService.PrintFileDetails.Base64Image)" alt=""/>
+                                    </div>
                                 </div>
                             }
                             <div class="col-md-2 mt-2">

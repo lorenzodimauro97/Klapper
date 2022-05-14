@@ -102,11 +102,11 @@ public class MoonrakerApiService
         return await LaunchGetRequest<GCodeFileDetailsRoot>(request, false);
     }
 
-    public async Task<HeatableSensible> GetISensible(string query)
+    public async Task<T> GetObject<T>(string query, bool filter)
     {
         var request = new RestRequest($"/printer/objects/query?{query}");
 
-        return await LaunchGetRequest<HeatableSensible>(request, true, query);
+        return await LaunchGetRequest<T>(request, filter, query);
     }
 
     public async Task<SystemInfo> GetSystemInfo()
@@ -119,12 +119,6 @@ public class MoonrakerApiService
     {
         var request = new RestRequest("/machine/system_info");
         return await LaunchGetRequest<SystemInfoStatus>(request, true, query);
-    }
-
-    public async Task<MoonrakerQueryResultObject> GetQueryableObjects(string query)
-    {
-        var request = new RestRequest($"/printer/objects/query?{query}");
-        return await LaunchGetRequest<MoonrakerQueryResultObject>(request, false);
     }
 
     private async Task<T> LaunchGetRequest<T>(RestRequest request, bool filter, string filterQuery = "")

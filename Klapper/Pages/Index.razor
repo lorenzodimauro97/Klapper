@@ -4,10 +4,11 @@
 @using Klapper.Shared.Components.Status
 @using Klapper.Shared.Components.File
 @using System.Timers
+@using Klapper.Classes
 @inject MoonrakerApiService Api
 @inject PrinterStatusService StatusService
 
-<PageTitle>Index</PageTitle>
+<PageTitle>Klapper - Index</PageTitle>
 
 <RadzenTabs TabPosition="@TabPosition.Top" RenderMode="TabRenderMode.Client">
     <Tabs>
@@ -94,7 +95,7 @@
 
     private async Task InitializeKlipperComponents()
     {
-        var queryList = await Api.GetQueryableObjects("heaters");
+        var queryList = await Api.GetObject<MoonrakerQueryResultObject>("heaters", false);
 
         Heaters = queryList.result.status.heaters.available_heaters;
         Sensors = queryList.result.status.heaters.available_sensors;

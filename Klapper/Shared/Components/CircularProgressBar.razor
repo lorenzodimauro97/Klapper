@@ -14,8 +14,6 @@
 }
 
 <style>
-
-
 .percent
 {
   position:relative;
@@ -85,7 +83,7 @@ svg circle
   width:100%;
   height:100%;
   fill:none;
-  stroke:rgba(25,25,25,0.4);
+  stroke:#191919;
   stroke-width:10;
   stroke-linecap:round;
   transform:translate(5px,5px);
@@ -98,7 +96,6 @@ svg circle:nth-child(2)
 .card:nth-child(1) svg circle:nth-child(2)
 {
   stroke-dashoffset:calc(440 - (440 * @ProgressValue) / 100);
-  color:#469bc6;
+  stroke:#469bc6;
 }
-
 </style>

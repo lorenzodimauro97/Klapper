@@ -14,11 +14,11 @@ public class PrinterStatusService
         SetKlipperStatusTimer();
     }
 
-    public PrinterInfo? PrinterInfo { get; set; }
-    public SystemInfo? SystemInfo { get; set; }
-    public PrinterStatus? PrinterStatus { get; set; }
-    
-    public GCodeFileDetails? PrintFileDetails { get; set; }
+    public PrinterInfo? PrinterInfo { get; private set; }
+    public SystemInfo? SystemInfo { get; private set; }
+    public PrinterStatus? PrinterStatus { get; private set; }
+    public GCodeFileDetails? PrintFileDetails { get; private set; }
+    public GcodeMove? GcodeMove { get; set; }
 
     public bool KlipperIsRunning => SystemInfo?.service_state.klipper.active_state == "active";
     public bool KlippyIsReady => PrinterStatus?.status.webhooks.state == "ready";
@@ -32,6 +32,7 @@ public class PrinterStatusService
             await GetKlipperPrinterInfo();
             await GetKlipperPrinterStatus();
             await GetPrintFileDetails();
+            await GetGcodeMove();
         };
         timer.AutoReset = true;
         timer.Enabled = true;
@@ -43,6 +44,7 @@ public class PrinterStatusService
         await GetKlipperSystemInfo();
         await GetKlipperPrinterStatus();
         await GetPrintFileDetails();
+        await GetGcodeMove();
     }
 
     private async Task GetKlipperSystemInfo()
@@ -75,5 +77,12 @@ public class PrinterStatusService
             if (PrintFileDetails.thumbnails?.Count > 0)
                 PrintFileDetails.Base64Image = Convert.ToBase64String(await _api.GetImage(PrintFileDetails.thumbnails.Last().relative_path));
         }
+    }
+    
+    private async Task GetGcodeMove()
+    {
+        if(PrinterStatus?.status.print_stats.state != "printing") return;
+        
+        GcodeMove = (await _api.GetObject<MoonrakerQueryResultObject>("gcode_move", false)).result.status.gcode_move;
     }
 }

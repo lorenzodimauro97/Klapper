@@ -47,6 +47,11 @@ public class GCodeFileDetails
         estimatedTime += $" {timespan.Minutes} Minutes and {timespan.Seconds} Seconds";
         return estimatedTime;
     }
+
+    public double GetLayer(double z)
+    {
+        return Math.Ceiling((z - first_layer_height) / layer_height + 1);
+    }
 }
 
 public class GCodeFileDetailsRoot
