@@ -88,9 +88,9 @@ public class MoonrakerApiService
         return await LaunchGetRequest<GCodeFileRoot>(request, false);
     }
 
-    public async Task<byte[]> GetImage(string query)
+    public async Task<byte[]> GetFile(string query, string root)
     {
-        var request = new RestRequest($"/server/files/gcodes/{query}");
+        var request = new RestRequest($"/server/files/{root}/{query}");
         var result = await _client.DownloadDataAsync(request);
 
         return result;
@@ -200,7 +200,6 @@ public class MoonrakerApiService
         var request = new RestRequest("/server/files/upload", Method.Post);
         request.AddParameter("root", root);
         request.AddFile("file", content, fileName);
-        request.AlwaysMultipartFormData = true;
         return await LaunchPostRequest(request, $"UPLOAD {fileName}");
     }
 }

@@ -1,0 +1,34 @@
+<RadzenHtmlEditor @bind-Value="@Content">
+    <RadzenHtmlEditorCustomTool>
+        <Template Context="editor">
+            <button class="btn btn-primary" type="button" style="width: 40px;" @onclick="Save">
+                <span class="oi oi-cloud-upload" aria-hidden="true"></span>
+            </button>
+        </Template>
+    </RadzenHtmlEditorCustomTool>
+    <RadzenHtmlEditorUndo/>
+    <RadzenHtmlEditorRedo/>
+</RadzenHtmlEditor>
+
+@code {
+
+    [Parameter]
+    public string? Content { get; set; }
+
+    private string text;
+
+    [Parameter]
+    public Action<string?> OnSave { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Content = Content.Replace("\n", "<br/>");
+        await base.OnInitializedAsync();
+    }
+
+    private void Save()
+    {
+        OnSave(Content.Replace("<br/>", "\n"));
+    }
+
+}

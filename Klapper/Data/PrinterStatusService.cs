@@ -71,16 +71,18 @@ public class PrinterStatusService
         {
             PrintFileDetails = (await _api.GetFileDetails(PrinterStatus.status.print_stats.filename))
                 .result;
-            
+
             if (PrintFileDetails.thumbnails?.Count > 0)
-                PrintFileDetails.Base64Image = Convert.ToBase64String(await _api.GetImage(PrintFileDetails.thumbnails.Last().relative_path));
+                PrintFileDetails.Base64Image =
+                    Convert.ToBase64String(await _api.GetFile(PrintFileDetails.thumbnails.Last().relative_path,
+                        "gcodes"));
         }
     }
-    
+
     private async Task GetGcodeMove()
     {
-        if(PrinterStatus?.status.print_stats.state != "printing") return;
-        
+        if (PrinterStatus?.status.print_stats.state != "printing") return;
+
         GcodeMove = (await _api.GetObject<MoonrakerQueryResultObject>("gcode_move", false)).result.status.gcode_move;
     }
 }

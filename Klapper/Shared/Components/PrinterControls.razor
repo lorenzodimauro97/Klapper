@@ -3,71 +3,71 @@
 @inject NotificationService Toast
 
 
-    <div class="justify-content-between mb-2 row">
-        <div class="col-md-4 pb-2">
-            <div class="card">
-                <div class="card-body text-center">
-                    <h2 class="card-title text-center">Move Length</h2>
-                    <div class="btn-group d-inline-block" role="group">
-                        <button type="button" class="btn btn-secondary" @onclick="() => MovementLength = 0.1f">0.1mm</button>
-                        <button type="button" class="btn btn-secondary" @onclick="() => MovementLength = 1f">1mm</button>
-                        <button type="button" class="btn btn-secondary" @onclick="() => MovementLength = 10f">10mm</button>
-                        <button type="button" class="btn btn-secondary" @onclick="() => MovementLength = 20f">20mm</button>
-                        <button type="button" class="btn btn-secondary" @onclick="() => MovementLength = 50f">50mm</button>
-                        <button type="button" class="btn btn-secondary" @onclick="() => MovementLength = 100f">100mm</button>
-                    </div>
-                </div>
-                <div class="card-footer text-center">
-                    <RadzenSlider @bind-Value="@MovementLength" Step="10" TValue="float" Min="0" Max="500" class="w-75"/>
-                    @MovementLength
+<div class="justify-content-between mb-2 row">
+    <div class="col-md-4 pb-2">
+        <div class="card">
+            <div class="card-body text-center">
+                <h2 class="card-title text-center">Move Length</h2>
+                <div class="btn-group d-inline-block" role="group">
+                    <button type="button" class="btn btn-secondary" @onclick="() => MovementLength = 0.1f">0.1mm</button>
+                    <button type="button" class="btn btn-secondary" @onclick="() => MovementLength = 1f">1mm</button>
+                    <button type="button" class="btn btn-secondary" @onclick="() => MovementLength = 10f">10mm</button>
+                    <button type="button" class="btn btn-secondary" @onclick="() => MovementLength = 20f">20mm</button>
+                    <button type="button" class="btn btn-secondary" @onclick="() => MovementLength = 50f">50mm</button>
+                    <button type="button" class="btn btn-secondary" @onclick="() => MovementLength = 100f">100mm</button>
                 </div>
             </div>
-        </div>
-        <div class="col-md-3 text-center pb-2 justify-content-between">
-            <div class="btn-group-vertical d-inline-block me-1 ms-1 text-center" role="group">
-                <button type="button" class="btn btn-secondary" @onclick="() => Move(0, 1)">+</button>
-                <h2>X</h2>
-                <button type="button" class="btn btn-secondary" @onclick="() => Move(0, 0)">-</button>
-            </div>
-            <div class="btn-group-vertical d-inline-block me-1 ms-1 text-center" role="group">
-                <button type="button" class="btn btn-secondary" @onclick="() => Move(1, 1)">+</button>
-                <h2>Y</h2>
-                <button type="button" class="btn btn-secondary" @onclick="() => Move(1, 0)">-</button>
-            </div>
-            <button type="button" class="btn btn-secondary" @onclick="Home">
-                <span class="oi oi-home" aria-hidden="true"></span>
-            </button>
-            <div class="btn-group-vertical d-inline-block me-1 ms-1 text-center" role="group">
-                <button type="button" class="btn btn-secondary" @onclick="() => Move(2, 1)">+</button>
-                <h2>Z</h2>
-                <button type="button" class="btn btn-secondary" @onclick="() => Move(2, 0)">-</button>
-            </div>
-            <div class="btn-group-vertical d-inline-block me-1 ms-1 text-center" role="group">
-                <button type="button" class="btn btn-secondary" @onclick="() => Move(3, 1)">+</button>
-                <h2>E</h2>
-                <button type="button" class="btn btn-secondary" @onclick="() => Move(3, 0)">-</button>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body text-center">
-                    <h2 class="card-title text-center">Extrusion Distance</h2>
-                    <div class="btn-group d-inline-block" role="group">
-                        <button type="button" class="btn btn-secondary" @onclick="() => ExtrusionDistance = 0.1f">0.1mm</button>
-                        <button type="button" class="btn btn-secondary" @onclick="() => ExtrusionDistance = 1f">1mm</button>
-                        <button type="button" class="btn btn-secondary" @onclick="() => ExtrusionDistance = 10f">10mm</button>
-                        <button type="button" class="btn btn-secondary" @onclick="() => ExtrusionDistance = 20f">20mm</button>
-                        <button type="button" class="btn btn-secondary" @onclick="() => ExtrusionDistance = 50f">50mm</button>
-                        <button type="button" class="btn btn-secondary" @onclick="() => ExtrusionDistance = 100f">100mm</button>
-                    </div>
-                </div>
-                <div class="card-footer text-center">
-                    <RadzenSlider @bind-Value="@ExtrusionDistance" Step="10" TValue="float" Min="0" Max="@MaxExtrusion" class="w-75"/>
-                    @ExtrusionDistance
-                </div>
+            <div class="card-footer text-center">
+                <RadzenSlider @bind-Value="@MovementLength" Step="10" TValue="float" Min="0" Max="500" class="w-75"/>
+                @MovementLength
             </div>
         </div>
     </div>
+    <div class="col-md-3 text-center pb-2 justify-content-between">
+        <div class="btn-group-vertical d-inline-block me-1 ms-1 text-center" role="group">
+            <button type="button" class="btn btn-secondary" @onclick="() => Move(0, 1)">+</button>
+            <h2>X</h2>
+            <button type="button" class="btn btn-secondary" @onclick="() => Move(0, 0)">-</button>
+        </div>
+        <div class="btn-group-vertical d-inline-block me-1 ms-1 text-center" role="group">
+            <button type="button" class="btn btn-secondary" @onclick="() => Move(1, 1)">+</button>
+            <h2>Y</h2>
+            <button type="button" class="btn btn-secondary" @onclick="() => Move(1, 0)">-</button>
+        </div>
+        <button type="button" class="btn btn-secondary" @onclick="Home">
+            <span class="oi oi-home" aria-hidden="true"></span>
+        </button>
+        <div class="btn-group-vertical d-inline-block me-1 ms-1 text-center" role="group">
+            <button type="button" class="btn btn-secondary" @onclick="() => Move(2, 1)">+</button>
+            <h2>Z</h2>
+            <button type="button" class="btn btn-secondary" @onclick="() => Move(2, 0)">-</button>
+        </div>
+        <div class="btn-group-vertical d-inline-block me-1 ms-1 text-center" role="group">
+            <button type="button" class="btn btn-secondary" @onclick="() => Move(3, 1)">+</button>
+            <h2>E</h2>
+            <button type="button" class="btn btn-secondary" @onclick="() => Move(3, 0)">-</button>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <h2 class="card-title text-center">Extrusion Distance</h2>
+                <div class="btn-group d-inline-block" role="group">
+                    <button type="button" class="btn btn-secondary" @onclick="() => ExtrusionDistance = 0.1f">0.1mm</button>
+                    <button type="button" class="btn btn-secondary" @onclick="() => ExtrusionDistance = 1f">1mm</button>
+                    <button type="button" class="btn btn-secondary" @onclick="() => ExtrusionDistance = 10f">10mm</button>
+                    <button type="button" class="btn btn-secondary" @onclick="() => ExtrusionDistance = 20f">20mm</button>
+                    <button type="button" class="btn btn-secondary" @onclick="() => ExtrusionDistance = 50f">50mm</button>
+                    <button type="button" class="btn btn-secondary" @onclick="() => ExtrusionDistance = 100f">100mm</button>
+                </div>
+            </div>
+            <div class="card-footer text-center">
+                <RadzenSlider @bind-Value="@ExtrusionDistance" Step="10" TValue="float" Min="0" Max="@MaxExtrusion" class="w-75"/>
+                @ExtrusionDistance
+            </div>
+        </div>
+    </div>
+</div>
 
 @code
 {

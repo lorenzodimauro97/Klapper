@@ -1,10 +1,9 @@
 ﻿@page "/"
 @using Klapper.Data
 @using Klapper.Shared.Components
-@using Klapper.Shared.Components.Status
 @using Klapper.Shared.Components.File
-@using System.Timers
 @using Klapper.Classes
+@using System.Timers
 @inject MoonrakerApiService Api
 @inject PrinterStatusService StatusService
 
@@ -104,7 +103,7 @@ else
         {
             await InitializeKlipperComponents();
             await InvokeAsync(StateHasChanged);
-            if(StatusService.KlipperIsRunning) timer.Stop();
+            if (StatusService.KlipperIsRunning) timer.Stop();
             timer.Start();
         };
         timer.AutoReset = false;

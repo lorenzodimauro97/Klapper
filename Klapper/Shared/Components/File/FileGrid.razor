@@ -1,6 +1,5 @@
 @using Klapper.Data
 @using Klapper.Classes
-@using System.Net.Http.Headers
 @inject MoonrakerApiService Api
 @inject NotificationService Toast
 @inject DialogService DialogService
@@ -151,7 +150,7 @@
             var buffer = new byte[file.Size];
 
             await ms.ReadAsync(buffer);
-            
+
             var result = await Api.UploadFile(buffer, file.Name, "gcodes");
             ToastNotification.Notificate(Toast, result.Item1, $"{file.Name} Uploaded", $"Failed to Upload {file.Name}, Error: {result.Item2}");
         }

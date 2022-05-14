@@ -63,7 +63,7 @@
     protected override async Task OnInitializedAsync()
     {
         if (File.thumbnails?.Count > 0)
-            _imageBase64 = Convert.ToBase64String(await Api.GetImage(File.thumbnails.Last().relative_path));
+            _imageBase64 = Convert.ToBase64String(await Api.GetFile(File.thumbnails.Last().relative_path, "gcodes"));
         await base.OnInitializedAsync();
     }
 }

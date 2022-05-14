@@ -1,4 +1,5 @@
 ﻿@using Klapper.Data
+@using System.Timers
 @inherits LayoutComponentBase
 @inject PrinterStatusService StatusService
 
@@ -13,7 +14,7 @@
         {
             <NavBar></NavBar>
         }
-        
+
         <article class="content px-4">
             @Body
         </article>
@@ -31,11 +32,11 @@
 
     private void SetKlipperStatusTimer()
     {
-        var timer = new System.Timers.Timer(1000);
+        var timer = new Timer(1000);
         timer.Elapsed += async (_, _) =>
         {
             await InvokeAsync(StateHasChanged);
-            if(StatusService.KlipperIsRunning) timer.Stop();
+            if (StatusService.KlipperIsRunning) timer.Stop();
             timer.Start();
         };
         timer.AutoReset = false;

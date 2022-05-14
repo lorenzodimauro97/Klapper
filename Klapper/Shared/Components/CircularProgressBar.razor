@@ -1,16 +1,20 @@
 <div class="percent">
-        <svg>
-          <circle cx="70" cy="70" r="70"></circle>
-          <circle cx="70" cy="70" r="70"></circle>
-          </svg>
-            <div class="num">
-              <h2>@ProgressValue<span>%</span></h2>
-            </div>
-      </div>
+    <svg>
+        <circle cx="70" cy="70" r="70"></circle>
+        <circle cx="70" cy="70" r="70"></circle>
+    </svg>
+    <div class="num">
+        <h2>
+            @ProgressValue<span>%</span>
+        </h2>
+    </div>
+</div>
 
 @code {
-  [Parameter]
+
+    [Parameter]
     public int ProgressValue { get; set; }
+
 }
 
 <style>

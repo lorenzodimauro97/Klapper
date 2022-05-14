@@ -641,7 +641,7 @@ public class PrintStats
     {
         return TimeSpan.FromSeconds(print_duration).ToString(@"hh\:mm\:ss");
     }
-    
+
     public string GetTotalDuration()
     {
         return TimeSpan.FromSeconds(total_duration).ToString(@"hh\:mm\:ss");

@@ -1,9 +1,8 @@
 @page "/PrinterConfiguration"
 @using Klapper.Data
 @using Klapper.Classes
+@using System.Text
 @using Klapper.Shared.Components.File
-@using Microsoft.Net.Http.Headers
-@using ContentDispositionHeaderValue = System.Net.Http.Headers.ContentDispositionHeaderValue
 @inject MoonrakerApiService Api
 @inject NotificationService Toast
 @inject DialogService DialogService
@@ -12,9 +11,11 @@
 
 <FileCrudOperations
     ButtonConfiguration="1"
-    DisableCrudButtons="SelectedFiles == null"
+    DisableCrudButtons="SelectedFile == null"
     DisableRefreshButton="IsRefreshingData"
     DisableUploadButton="IsUploading"
+    OnLaunchPrintDialog="async () => await ShowEditFileDialog()"
+    OnDeleteFileDialog="async () => await DeleteFile()"
     RefreshData="async () => await RefreshData()"
     OnUpload="async upload => await UploadFiles(upload)"/>
 <div class="row">
@@ -42,7 +43,7 @@
 
     private List<GCodeFile> Files { get; set; } = new();
 
-    private GCodeFile SelectedFiles { get; set; }
+    private GCodeFile SelectedFile { get; set; }
 
     private bool IsRefreshingData { get; set; }
 
@@ -57,7 +58,7 @@
     private async Task RefreshData()
     {
         IsRefreshingData = true;
-        SelectedFiles = null;
+        SelectedFile = null;
 
         var isReloadingData = Files.Count > 0;
 
@@ -83,7 +84,7 @@
 
     private async Task SelectGCodeFile(GCodeFile file)
     {
-        SelectedFiles = file;
+        SelectedFile = file;
     }
 
     /*private async Task ShowStartPrintDialog()
@@ -121,12 +122,23 @@
         }
     }*/
 
-    private async Task OnDeleteFile(GCodeFileDetails file)
+    private async Task ShowEditFileDialog()
+    {
+        var detailedFile = await Api.GetFile(SelectedFile.path, "config");
+        const string root = "config";
+
+        var result = await DialogService.OpenAsync("Edit File", ds =>
+            @<FileEditor Content="@Encoding.UTF8.GetString(detailedFile)"
+                         OnSave="async file => { ds.Close(true); await UploadFiles(Encoding.UTF8.GetBytes(file), SelectedFile.path, root);}">
+            </FileEditor>, new DialogOptions { Width = "50%", Height = "auto" });
+    }
+
+    private async Task DeleteFile()
     {
         try
         {
-            var result = await Api.DeleteFile(file.filename, "config");
-            ToastNotification.Notificate(Toast, result.Item1, $"{file.filename} Deleted", $"Failed to delete {file.filename}");
+            var result = await Api.DeleteFile(SelectedFile.path, "config");
+            ToastNotification.Notificate(Toast, result.Item1, $"{SelectedFile.path} Deleted", $"Failed to delete {SelectedFile.path}");
 
             if (result.Item1) await RefreshData();
         }
@@ -146,21 +158,26 @@
 
         foreach (var file in files)
         {
-                if (file == null) continue;
+            if (file == null) continue;
 
-                await using var ms = file.OpenReadStream(file.Size);
+            await using var ms = file.OpenReadStream(file.Size);
 
-                var buffer = new byte[file.Size];
+            var buffer = new byte[file.Size];
 
-                await ms.ReadAsync(buffer);
-            
-                var result = await Api.UploadFile(buffer, file.Name, "config");
-            ToastNotification.Notificate(Toast, result.Item1, $"{file.Name} Uploaded", $"Failed to Upload {file.Name}, Error: {result.Item2}");
+            await ms.ReadAsync(buffer);
+
+            await UploadFiles(buffer, file.Name, "config");
         }
 
         await RefreshData();
 
         IsUploading = false;
+    }
+
+    private async Task UploadFiles(byte[] getBytes, string fileName, string root)
+    {
+        var result = await Api.UploadFile(getBytes, fileName, root);
+        ToastNotification.Notificate(Toast, result.Item1, $"{fileName} Uploaded", $"Failed to Upload {fileName}, Error: {result.Item2}");
     }
 
 }

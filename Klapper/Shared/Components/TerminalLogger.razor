@@ -3,36 +3,36 @@
 @inject MoonrakerApiService Api
 
 
-    <div class="row">
-        <div class="col">
-            <div class="card">
-                <div class="card-header">Terminal</div>
-                <div class="card-body height3" style=" height: 400px; overflow: scroll">
-                    <ul class="chat-list">
+<div class="row">
+    <div class="col">
+        <div class="card">
+            <div class="card-header">Terminal</div>
+            <div class="card-body height3" style=" height: 400px; overflow: scroll">
+                <ul class="chat-list">
 
-                        @foreach (var log in Api.Log)
-                        {
-                            var messageClass =
-                                log.Item1 == "Client" ? "out" : "in";
+                    @foreach (var log in Api.Log)
+                    {
+                        var messageClass =
+                            log.Item1 == "Client" ? "out" : "in";
 
-                            <li class=@messageClass>
-                                <div class="chat-body">
-                                    <div class="chat-message">
-                                        <h5>@log.Item1</h5>
-                                        <p>@log.Item3</p>
-                                    </div>
+                        <li class=@messageClass>
+                            <div class="chat-body">
+                                <div class="chat-message">
+                                    <h5>@log.Item1</h5>
+                                    <p>@log.Item3</p>
                                 </div>
-                            </li>
-                        }
-                    </ul>
-                </div>
-                <div class="card-header">
-                    <RadzenTextBox disabled="@IsSendingCommand" @bind-Value="@Command" Style="width: 90%"/>
-                    <button disabled="@IsSendingCommand" class="btn btn-success" type="button" @onclick="SendCommand">Send</button>
-                </div>
+                            </div>
+                        </li>
+                    }
+                </ul>
+            </div>
+            <div class="card-header">
+                <RadzenTextBox disabled="@IsSendingCommand" @bind-Value="@Command" Style="width: 90%"/>
+                <button disabled="@IsSendingCommand" class="btn btn-success" type="button" @onclick="SendCommand">Send</button>
             </div>
         </div>
     </div>
+</div>
 
 @code
 {
@@ -57,7 +57,7 @@
     private async Task SendCommand()
     {
         IsSendingCommand = true;
-        
+
         if (Command.Contains("HELP", StringComparison.InvariantCultureIgnoreCase))
             await Api.GetGCodeList();
         else
@@ -66,7 +66,7 @@
 
         IsSendingCommand = false;
     }
-    
+
 }
 
 <style>

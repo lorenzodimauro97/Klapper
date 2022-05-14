@@ -34,7 +34,7 @@ public class GCodeFileDetails
     public double? print_start_time { get; set; }
     public string? job_id { get; set; }
     public string filename { get; set; }
-    
+
     public string Base64Image { get; set; }
 
     public string GetEstimatedTime()
