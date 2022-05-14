@@ -1,0 +1,59 @@
+@using Klapper.Shared.Components
+@using Klapper.Data
+@using Klapper.Shared.Components.File
+@inject PrinterStatusService StatusService
+
+<RadzenTabs TabPosition="@TabPosition.Top" RenderMode="TabRenderMode.Client">
+    <Tabs>
+        <RadzenTabsItem Icon="control_camera" Text="Control">
+            @if (StatusService.KlipperIsRunning && StatusService.KlippyIsReady)
+            {
+                <PrinterStatus OnPausePrint="async () => { await Api.PauseCancelResumePrint(0); }"
+                               OnCancelPrint="async () => { await Api.PauseCancelResumePrint(1); }"
+                               OnResumePrint="async () => { await Api.PauseCancelResumePrint(2); }"
+                               OnClearPrint="async () => { await Api.RunGCode(SpecialGCodeCommands.ClearSDCard); }">
+                </PrinterStatus>
+
+                <PrinterControls MaxExtrusion="300"></PrinterControls>
+            }
+        </RadzenTabsItem>
+        <RadzenTabsItem Icon="thermostat" Text="Temperature">
+            @if (StatusService.KlipperIsRunning && StatusService.KlippyIsReady && Sensors != null)
+            {
+                @foreach (var heater in Sensors)
+                {
+                    <div style="display:inline-block; padding: 20px">
+                        <ProductCard @ref="HeaterComponent" Name=@heater></ProductCard>
+                    </div>
+                }
+
+                <TemperatureChart Sensors="HeaterComponents"></TemperatureChart>
+            }
+        </RadzenTabsItem>
+        <RadzenTabsItem Icon="insert_drive_file" Text="Files">
+            @if (StatusService.KlipperIsRunning && StatusService.KlippyIsReady)
+            {
+                <FileGrid></FileGrid>
+            }
+        </RadzenTabsItem>
+        <RadzenTabsItem Icon="terminal" Text="Terminal">
+            @if (StatusService.KlipperIsRunning && StatusService.KlippyIsReady)
+            {
+                <TerminalLogger></TerminalLogger>
+            }
+        </RadzenTabsItem>
+    </Tabs>
+</RadzenTabs>
+
+@code
+{
+    [Parameter]
+    public List<ProductCard> HeaterComponents { get; set; }
+
+    public ProductCard HeaterComponent
+    {
+        set => HeaterComponents.Add(value);
+    }
+
+    [Parameter] public List<string> Sensors { get; set; }
+}

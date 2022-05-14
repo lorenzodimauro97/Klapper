@@ -1,57 +1,29 @@
 ﻿@page "/"
 @using Klapper.Data
 @using Klapper.Shared.Components
+@using Klapper.Shared.Components.Status
 @using Klapper.Shared.Components.File
 @using Klapper.Classes
 @using System.Timers
+@using Klapper.Pages.IndexComponents
+@using PSC.Blazor.Components.BrowserDetect
 @inject MoonrakerApiService Api
 @inject PrinterStatusService StatusService
 
 <PageTitle>Klapper - Index</PageTitle>
 
+<BrowserDetect @bind-BrowserInfo="@Info"/>
+
 @if (StatusService.KlipperIsRunning)
 {
-    <RadzenTabs TabPosition="@TabPosition.Top" RenderMode="TabRenderMode.Client">
-        <Tabs>
-            <RadzenTabsItem Icon="control_camera" Text="Status & Control">
-                @if (StatusService.KlipperIsRunning && StatusService.KlippyIsReady)
-                {
-                    <PrinterStatus OnPausePrint="async () => { await Api.PauseCancelResumePrint(0); }"
-                                   OnCancelPrint="async () => { await Api.PauseCancelResumePrint(1); }"
-                                   OnResumePrint="async () => { await Api.PauseCancelResumePrint(2); }"
-                                   OnClearPrint="async () => { await Api.RunGCode(SpecialGCodeCommands.ClearSDCard); }">
-                    </PrinterStatus>
-
-                    <PrinterControls MaxExtrusion="300"></PrinterControls>
-                }
-            </RadzenTabsItem>
-            <RadzenTabsItem Icon="thermostat" Text="Temperature">
-                @if (StatusService.KlipperIsRunning && StatusService.KlippyIsReady && Sensors != null)
-                {
-                    @foreach (var heater in Sensors)
-                    {
-                        <div style="display:inline-block; padding: 20px">
-                            <ProductCard @ref="HeaterComponent" Name=@heater></ProductCard>
-                        </div>
-                    }
-
-                    <TemperatureChart Sensors="_heaterComponents"></TemperatureChart>
-                }
-            </RadzenTabsItem>
-            <RadzenTabsItem Icon="insert_drive_file" Text="Files">
-                @if (StatusService.KlipperIsRunning && StatusService.KlippyIsReady)
-                {
-                    <FileGrid></FileGrid>
-                }
-            </RadzenTabsItem>
-            <RadzenTabsItem Icon="terminal" Text="Terminal">
-                @if (StatusService.KlipperIsRunning && StatusService.KlippyIsReady)
-                {
-                    <TerminalLogger></TerminalLogger>
-                }
-            </RadzenTabsItem>
-        </Tabs>
-    </RadzenTabs>
+    if ((bool)Info?.IsMobile)
+    {
+        <MobileIndex HeaterComponents="_heaterComponents" Sensors="Sensors"></MobileIndex>
+    }
+    else
+    {
+        <DesktopIndex HeaterComponents="_heaterComponents" Sensors="Sensors"></DesktopIndex>
+    }
 }
 else
 {
@@ -59,7 +31,9 @@ else
     {
         <row class="text-center h-100">
             <div class="col-sm-12 my-auto">
-                <h2>Initializing Klapper on @Api.BaseUrl ...</h2>
+                <h2>
+                    InitializingKlapper on @Api.BaseUrl ...
+                </h2>
             </div>
         </row>
     }
@@ -67,10 +41,16 @@ else
     {
         <row class="text-center h-100">
             <div class="col-sm-12 my-auto">
-                <h2>Connection Error</h2>
-                <h4>It seems Klapper can't connect to Moonraker's Address (Currently @Api.BaseUrl).</h4>
+                <h2 >
+                    Connection Error
+                </h2 >
+                <h4 >
+                    It seems Klapper can't connect to Moonraker's Address(Currently @Api .BaseUrl).
+                </h4 >
                 <br/>
-                <h4>Care to check that everything's alright?</h4>
+                <h4>
+                    Care to check that everything's alright ?
+                </h4>
             </div>
         </row>
     }
@@ -78,6 +58,8 @@ else
 
 @code
 {
+
+    public BrowserInfo Info { get; set; }
     private bool _firstInitialization = true;
     List<string> Heaters { get; set; }
     private readonly List<ProductCard> _heaterComponents = new();
