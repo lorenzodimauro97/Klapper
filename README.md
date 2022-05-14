@@ -18,24 +18,36 @@ The idea is to implement everything Fluidd and Moonraker has, plus:
 
 # How to run?
 The ASP.NET Core Based Application is self-contained and does not require any further Runtime or SDK installation to do it's job.
+Before starting the server ensure to edit the appsettings.json to reflect your current running moonraker server's IP address (Eg: 192.168.xxx.xxx)
 
 On Windows, simply run Klapper.exe and let the Kestrel server do the magic!
 
-To run in Linux, simply run ./Klapper or if you want to make Klapper start automatically when Linux starts, you can create a systemd service using the following Template:
+To run in Linux (in this example a Raspberrry Pi), simply run:
+```./Klapper```
 
-#Systemd service file for Klapper
+If you want to make Klapper start automatically when your Pi starts, you can create a systemd service.
+
+```sudo nano /etc/systemd/system/klapper.service```
+
+Add the snippet below. You'll have to change your working directory. I.E.
+
+```
 [Unit]
 Description=Starts Klapper Kestrel server on startup
+
 [Service]
- WorkingDirectory=$INSERTKLAPPERDIRECTORYHERE
-ExecStart=$INSERTKLAPPERDIRECTORYHERE/Klapper
+WorkingDirectory=/home/pi/klapper
+ExecStart=/home/pi/klapper/Klapper
 Restart=always
+
 #Restart service after 10 seconds if the dotnet service crashes:
 RestartSec=10
 KillSignal=SIGINT
 SyslogIdentifier=klapper-identifier
-User=$INSERTUSERNAMEHERE
+User=pi
+
 [Install]
 WantedBy=multi-user.target
+``` 
 
 and it will start listening on ports 5000 and 5001 (for HTTPS).
