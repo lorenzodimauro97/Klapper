@@ -9,9 +9,9 @@ The idea is to implement everything Fluidd and Moonraker has, plus:
 - Custom 3D GCode viewer with realtime nozzle position
 
 # What's missing, currently?
-- A lot of simple information (Eg: Number of layers, Flow Rate)
+- A lot of simple information (Eg: ~~Number of layers~~, Flow Rate)
 - A lot of controls (Eg: Extruder / Motor force)
-- Config editing
+~~-	Config Editing
 - Webcam interface
 - 3D GCode viewer with realtime nozzle position
 - Probably something else I'm missing
