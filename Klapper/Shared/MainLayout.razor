@@ -1,4 +1,6 @@
-﻿@inherits LayoutComponentBase
+﻿@using Klapper.Data
+@inherits LayoutComponentBase
+@inject PrinterStatusService StatusService
 
 <PageTitle>Klapper</PageTitle>
 
@@ -7,10 +9,36 @@
 
 <div class="page">
     <main>
-        <NavBar></NavBar>
-
+        @if (StatusService.KlipperIsRunning)
+        {
+            <NavBar></NavBar>
+        }
+        
         <article class="content px-4">
             @Body
         </article>
     </main>
 </div>
+
+@code
+{
+    protected override async Task OnInitializedAsync()
+    {
+        SetKlipperStatusTimer();
+
+        await base.OnInitializedAsync();
+    }
+
+    private void SetKlipperStatusTimer()
+    {
+        var timer = new System.Timers.Timer(1000);
+        timer.Elapsed += async (_, _) =>
+        {
+            await InvokeAsync(StateHasChanged);
+            if(StatusService.KlipperIsRunning) timer.Stop();
+            timer.Start();
+        };
+        timer.AutoReset = false;
+        timer.Enabled = true;
+    }
+}

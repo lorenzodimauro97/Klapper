@@ -20,7 +20,7 @@
                     <PrinterStatus OnPausePrint="async () => { await Api.PauseCancelResumePrint(0); }"
                                    OnCancelPrint="async () => { await Api.PauseCancelResumePrint(1); }"
                                    OnResumePrint="async () => { await Api.PauseCancelResumePrint(2); }"
-                                   OnClearPrint="async () => { await Api.RunGCode(Classes.SpecialGCodeCommands.ClearSDCard); }">
+                                   OnClearPrint="async () => { await Api.RunGCode(SpecialGCodeCommands.ClearSDCard); }">
                     </PrinterStatus>
 
                     <PrinterControls MaxExtrusion="300"></PrinterControls>
@@ -94,28 +94,21 @@ else
     {
         SetKlipperStatusTimer();
 
-        await CheckKlipperStatus();
-        
-        _firstInitialization = false;
-
         await base.OnInitializedAsync();
     }
 
     private void SetKlipperStatusTimer()
     {
-        var timer = new Timer(15000);
+        var timer = new Timer(1000);
         timer.Elapsed += async (_, _) =>
         {
-            await CheckKlipperStatus();
+            await InitializeKlipperComponents();
             await InvokeAsync(StateHasChanged);
+            if(StatusService.KlipperIsRunning) timer.Stop();
+            timer.Start();
         };
-        timer.AutoReset = true;
+        timer.AutoReset = false;
         timer.Enabled = true;
-    }
-
-    private async Task CheckKlipperStatus()
-    {
-        await InitializeKlipperComponents();
     }
 
     private async Task InitializeKlipperComponents()
@@ -126,7 +119,8 @@ else
         {
             Heaters = queryList.result.status.heaters.available_heaters;
             Sensors = queryList.result.status.heaters.available_sensors;
+
+            _firstInitialization = false;
         }
     }
-
 }
