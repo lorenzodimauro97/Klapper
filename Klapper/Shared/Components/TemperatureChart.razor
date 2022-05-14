@@ -4,10 +4,6 @@
 
 @if (Sensors != null)
 {
-    <div class="row pb-2">
-        <h2 class="text-primary">Temperature Chart</h2>
-    </div>
-
     <RadzenChart>
         @foreach (var sensor in Sensors.Where(sensor => Temperatures.Any(x => x.Item1 == sensor.Name)))
         {
@@ -17,7 +13,7 @@
                 <RadzenMarkers MarkerType="@MarkerType.None"/>
             </RadzenLineSeries>
         }
-        <RadzenLegend Visible="true"/>
+        <RadzenLegend Position="LegendPosition.Bottom" Visible="true"/>
         <RadzenCategoryAxis Padding="20" FormatString="{0:HH:mm:ss}"/>
         <RadzenValueAxis>
             <RadzenGridLines Visible="true"/>

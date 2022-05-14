@@ -2,7 +2,7 @@
 @using System.Timers
 @inject MoonrakerApiService Api
 
-<div class="container content">
+
     <div class="row">
         <div class="col">
             <div class="card">
@@ -27,17 +27,18 @@
                     </ul>
                 </div>
                 <div class="card-header">
-                    <RadzenTextBox @bind-Value="@Command" Style="width: 90%"/>
-                    <button class="btn btn-success" type="button" @onclick="SendCommand">Send</button>
+                    <RadzenTextBox disabled="@IsSendingCommand" @bind-Value="@Command" Style="width: 90%"/>
+                    <button disabled="@IsSendingCommand" class="btn btn-success" type="button" @onclick="SendCommand">Send</button>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
 @code
 {
     private string Command { get; set; }
+    private bool IsSendingCommand { get; set; }
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -55,12 +56,17 @@
 
     private async Task SendCommand()
     {
+        IsSendingCommand = true;
+        
         if (Command.Contains("HELP", StringComparison.InvariantCultureIgnoreCase))
             await Api.GetGCodeList();
         else
             await Api.RunGCode(Command);
         Command = string.Empty;
+
+        IsSendingCommand = false;
     }
+    
 }
 
 <style>

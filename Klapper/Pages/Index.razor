@@ -1,65 +1,60 @@
 ﻿@page "/"
 @using Klapper.Data
 @using Klapper.Shared.Components
-@using Klapper.Shared.Components.File
 @using Klapper.Shared.Components.Status
+@using Klapper.Shared.Components.File
 @using System.Timers
 @inject MoonrakerApiService Api
 @inject PrinterStatusService StatusService
 
 <PageTitle>Index</PageTitle>
 
-@if (StatusService.KlipperIsRunning && StatusService.KlippyIsReady)
-{
-    <PrinterStatus OnPausePrint="async () => { await Api.PauseCancelResumePrint(0); }"
-                   OnCancelPrint="async () => { await Api.PauseCancelResumePrint(1); }"
-                   OnResumePrint="async () => { await Api.PauseCancelResumePrint(2); }">
-    </PrinterStatus>
-
-    <PrinterControls MaxExtrusion="300"></PrinterControls>
-
-    @if (Sensors != null)
-    {
-        <div class="border p-3 mt-4">
-
-            <div class="row pb-2">
-                <h2 class="text-primary">Heaters And Sensors</h2>
-            </div>
-
-            @foreach (var heater in Sensors)
+<RadzenTabs TabPosition="@TabPosition.Top" RenderMode="TabRenderMode.Client">
+    <Tabs>
+        <RadzenTabsItem Icon="control_camera" Text="Status & Control">
+            @if (StatusService.KlipperIsRunning && StatusService.KlippyIsReady)
             {
-                <div style="display:inline-block; padding: 20px">
-                    <ProductCard @ref="HeaterComponent" Name=@heater></ProductCard>
-                </div>
+                <PrinterStatus OnPausePrint="async () => { await Api.PauseCancelResumePrint(0); }"
+                               OnCancelPrint="async () => { await Api.PauseCancelResumePrint(1); }"
+                               OnResumePrint="async () => { await Api.PauseCancelResumePrint(2); }"
+                               OnClearPrint="async () => {await Api.RunGCode(Classes.SpecialGCodeCommands.ClearSDCard);}">
+                </PrinterStatus>
+
+                <PrinterControls MaxExtrusion="300"></PrinterControls>
             }
+        </RadzenTabsItem>
+        <RadzenTabsItem Icon="thermostat" Text="Temperature">
+            @if (StatusService.KlipperIsRunning && StatusService.KlippyIsReady && Sensors != null)
+            {
+                @foreach (var heater in Sensors)
+                    {
+                        <div style="display:inline-block; padding: 20px">
+                            <ProductCard @ref="HeaterComponent" Name=@heater></ProductCard>
+                        </div>
+                    }
 
-            <TemperatureChart Sensors="_heaterComponents"></TemperatureChart>
+                    <TemperatureChart Sensors="_heaterComponents"></TemperatureChart>
+            }
+        </RadzenTabsItem>
+        <RadzenTabsItem Icon="insert_drive_file" Text="Files">
+            @if (StatusService.KlipperIsRunning && StatusService.KlippyIsReady)
+            {
+                <FileGrid></FileGrid>
+            }
+        </RadzenTabsItem>
+        <RadzenTabsItem Icon="terminal" Text="Terminal">
+            @if (StatusService.KlipperIsRunning && StatusService.KlippyIsReady)
+            {
+                <TerminalLogger></TerminalLogger>
+            }
+        </RadzenTabsItem>
+    </Tabs>
+</RadzenTabs>
 
-        </div>
-    }
-    @if (true)
-    {
-        <div class="border p-3 mt-4">
-
-            <div class="row pb-2">
-                <h2 class="text-primary">Files</h2>
-            </div>
-            <FileGrid></FileGrid>
-        </div>
-
-        <div class="border p-3 mt-4">
-
-            <div class="row">
-                <h2 class="text-primary">Terminal</h2>
-            </div>
-            <TerminalLogger></TerminalLogger>
-        </div>
-    }
-}
 
 @code
 {
-    bool KlipperIsInitialized { get; set; }
+    private bool KlipperIsInitialized { get; set; }
     List<string> Heaters { get; set; }
     private readonly List<ProductCard> _heaterComponents = new();
 
@@ -106,4 +101,5 @@
 
         KlipperIsInitialized = true;
     }
+
 }
