@@ -126,7 +126,7 @@ public class MoonrakerApiService
         var executeRequest = await _client.ExecuteAsync(request);
         var requestResult = executeRequest.Content;
 
-        if (!executeRequest.IsSuccessful) throw new BadHttpRequestException(executeRequest.StatusCode.ToString());
+        if (!executeRequest.IsSuccessful) return default;
 
         if (filter)
         {

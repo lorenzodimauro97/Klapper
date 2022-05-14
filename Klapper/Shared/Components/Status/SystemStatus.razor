@@ -43,7 +43,7 @@
     // Create a timer with a two second interval.
         var timer = new Timer(2000);
     // Hook up the Elapsed event for the timer. 
-        timer.Elapsed += async (sender, args) =>
+        timer.Elapsed += async (_, _) =>
         {
             await RefreshData();
             await InvokeAsync(StateHasChanged);

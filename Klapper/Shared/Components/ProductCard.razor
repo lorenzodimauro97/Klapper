@@ -45,7 +45,7 @@
     private void SetAutoRefresh()
     {
         var timer = new Timer(200);
-        timer.Elapsed += async (sender, args) =>
+        timer.Elapsed += async (_, _) =>
         {
             await RefreshData();
             await InvokeAsync(StateHasChanged);

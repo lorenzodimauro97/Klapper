@@ -124,7 +124,7 @@
     private void SetUIRefreshTimer()
     {
         var timer = new Timer(2000);
-        timer.Elapsed += async (sender, args) => { await InvokeAsync(StateHasChanged); };
+        timer.Elapsed += async (_, _) => { await InvokeAsync(StateHasChanged); };
         timer.AutoReset = true;
         timer.Enabled = true;
     }

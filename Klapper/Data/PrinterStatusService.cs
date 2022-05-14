@@ -26,7 +26,7 @@ public class PrinterStatusService
     private void SetKlipperStatusTimer()
     {
         var timer = new Timer(1000);
-        timer.Elapsed += async (sender, args) =>
+        timer.Elapsed += async (_, _) =>
         {
             await GetKlipperSystemInfo();
             await GetKlipperPrinterInfo();
@@ -54,20 +54,18 @@ public class PrinterStatusService
 
     private async Task GetKlipperPrinterInfo()
     {
-        PrinterInfo = (await _api.GetPrinterInfo()).result;
+        PrinterInfo = (await _api.GetPrinterInfo())?.result;
         //SystemInfo.
     }
 
     private async Task GetKlipperPrinterStatus()
     {
-        PrinterStatus = (await _api.GetPrinterStatus()).result;
+        PrinterStatus = (await _api.GetPrinterStatus())?.result;
         //SystemInfo.
     }
 
     private async Task GetPrintFileDetails()
     {
-        if (PrinterStatus?.status.print_stats.filename == null) return;
-
         if (!string.IsNullOrEmpty(PrinterStatus?.status.print_stats.filename) &&
             PrinterStatus?.status.print_stats.filename != PrintFileDetails?.filename)
         {
