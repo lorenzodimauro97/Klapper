@@ -1,32 +1,43 @@
-@using Klapper.Shared.Components
 @using Klapper.Data
+@using Klapper.Shared.Components
 @using Klapper.Shared.Components.File
+@using Klapper.Classes
 @inject PrinterStatusService StatusService
+@inject MoonrakerApiService Api
+
 
 @if (StatusService.KlipperIsRunning && StatusService.KlippyIsReady)
+{
+    <div class="row pb-2">
+        <Klapper.Shared.Components.Status.PrinterStatus OnPausePrint="async () => { await Api.PauseCancelResumePrint(0); }"
+                                                        OnCancelPrint="async () => { await Api.PauseCancelResumePrint(1); }"
+                                                        OnResumePrint="async () => { await Api.PauseCancelResumePrint(2); }"
+                                                        OnClearPrint="async () => { await Api.RunGCode(SpecialGCodeCommands.ClearSDCard); }">
+        </Klapper.Shared.Components.Status.PrinterStatus>
+    </div>
+    <div class="row pb-2">
+        <PrinterControls MaxExtrusion="300"></PrinterControls>
+    </div>
+    if (Sensors != null)
+    {
+        @foreach (var heater in Sensors)
         {
-            <PrinterStatus OnPausePrint="async () => { await Api.PauseCancelResumePrint(0); }"
-                           OnCancelPrint="async () => { await Api.PauseCancelResumePrint(1); }"
-                           OnResumePrint="async () => { await Api.PauseCancelResumePrint(2); }"
-                           OnClearPrint="async () => { await Api.RunGCode(SpecialGCodeCommands.ClearSDCard); }">
-            </PrinterStatus>
-
-            <PrinterControls MaxExtrusion="300"></PrinterControls>
-
-            if (Sensors != null)
-            {
-                @foreach (var heater in Sensors)
-                {
-                    <div style="display:inline-block; padding: 20px">
-                        <ProductCard @ref="HeaterComponent" Name=@heater></ProductCard>
-                    </div>
-                }
-
-                <TemperatureChart Sensors="HeaterComponents"></TemperatureChart>
-                <FileGrid></FileGrid>
-                <TerminalLogger></TerminalLogger>
-            }
+            <div style="display:inline-block; padding: 20px">
+                <ProductCard @ref="HeaterComponent" Name=@heater></ProductCard>
+            </div>
         }
+
+        <div class="row pb-2">
+            <TemperatureChart Sensors="HeaterComponents"></TemperatureChart>
+        </div>
+        <div class="row pb-2">
+            <FileGrid></FileGrid>
+        </div>
+        <div class="row pb-2">
+            <TerminalLogger></TerminalLogger>
+        </div>
+    }
+}
 
 @code
 {
@@ -38,5 +49,6 @@
         set => HeaterComponents.Add(value);
     }
 
-    [Parameter] public List<string> Sensors { get; set; }
+    [Parameter]
+    public List<string> Sensors { get; set; }
 }

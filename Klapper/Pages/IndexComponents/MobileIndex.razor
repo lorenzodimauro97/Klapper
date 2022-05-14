@@ -1,18 +1,20 @@
-@using Klapper.Shared.Components
 @using Klapper.Data
+@using Klapper.Shared.Components
 @using Klapper.Shared.Components.File
+@using Klapper.Classes
 @inject PrinterStatusService StatusService
+@inject MoonrakerApiService Api
 
 <RadzenTabs TabPosition="@TabPosition.Top" RenderMode="TabRenderMode.Client">
     <Tabs>
         <RadzenTabsItem Icon="control_camera" Text="Control">
             @if (StatusService.KlipperIsRunning && StatusService.KlippyIsReady)
             {
-                <PrinterStatus OnPausePrint="async () => { await Api.PauseCancelResumePrint(0); }"
-                               OnCancelPrint="async () => { await Api.PauseCancelResumePrint(1); }"
-                               OnResumePrint="async () => { await Api.PauseCancelResumePrint(2); }"
-                               OnClearPrint="async () => { await Api.RunGCode(SpecialGCodeCommands.ClearSDCard); }">
-                </PrinterStatus>
+                <Klapper.Shared.Components.Status.PrinterStatus OnPausePrint="async () => { await Api.PauseCancelResumePrint(0); }"
+                                                                OnCancelPrint="async () => { await Api.PauseCancelResumePrint(1); }"
+                                                                OnResumePrint="async () => { await Api.PauseCancelResumePrint(2); }"
+                                                                OnClearPrint="async () => { await Api.RunGCode(SpecialGCodeCommands.ClearSDCard); }">
+                </Klapper.Shared.Components.Status.PrinterStatus>
 
                 <PrinterControls MaxExtrusion="300"></PrinterControls>
             }
@@ -55,8 +57,10 @@
         set => HeaterComponents.Add(value);
     }
 
-    [Parameter] public List<string> Sensors { get; set; }
+    [Parameter]
+    public List<string> Sensors { get; set; }
 }
+
 <style>
     .rz-tabview-nav {
       overflow-x: auto;

@@ -1,10 +1,10 @@
 ﻿@page "/"
 @using Klapper.Data
-@using Klapper.Shared.Components
-@using Klapper.Classes
-@using System.Timers
 @using Klapper.Pages.IndexComponents
 @using PSC.Blazor.Components.BrowserDetect
+@using Klapper.Shared.Components
+@using System.Timers
+@using Klapper.Classes
 @inject MoonrakerApiService Api
 @inject PrinterStatusService StatusService
 
@@ -30,7 +30,7 @@ else
         <row class="text-center h-100">
             <div class="col-sm-12 my-auto">
                 <h2>
-                    Initializingn Klapper on @Api.BaseUrl...
+                    Initializing Klapper on @Api.BaseUrl...
                 </h2>
             </div>
         </row>
