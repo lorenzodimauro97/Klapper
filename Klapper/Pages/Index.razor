@@ -1,8 +1,6 @@
 ﻿@page "/"
 @using Klapper.Data
 @using Klapper.Shared.Components
-@using Klapper.Shared.Components.Status
-@using Klapper.Shared.Components.File
 @using Klapper.Classes
 @using System.Timers
 @using Klapper.Pages.IndexComponents
@@ -16,7 +14,7 @@
 
 @if (StatusService.KlipperIsRunning)
 {
-    if ((bool)Info?.IsMobile)
+    if (Info != null && (bool)Info.IsMobile)
     {
         <MobileIndex HeaterComponents="_heaterComponents" Sensors="Sensors"></MobileIndex>
     }
@@ -32,7 +30,7 @@ else
         <row class="text-center h-100">
             <div class="col-sm-12 my-auto">
                 <h2>
-                    InitializingKlapper on @Api.BaseUrl ...
+                    Initializingn Klapper on @Api.BaseUrl...
                 </h2>
             </div>
         </row>
