@@ -1,46 +1,80 @@
 @using Klapper.Data
 @using System.Timers
+@using Klapper.Classes
 @inject PrinterStatusService StatusService
 
 @if (StatusService.PrinterStatus != null)
 {
-    <div class="border p-3 mt-4">
-        <div class="row">
-            <h2 class="text-primary">Printer Status</h2>
+    <div class="row pb-2">
+        <div class="col-md-2 pb-2">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title text-center">Printer Status</h2>
+                </div>
+                <div class="card-footer text-center">
+                    <strong>@StatusService.PrinterStatus.status.print_stats.state</strong>
+                </div>
+            </div>
         </div>
-        <div class="row">
-            <div class="col-md-2">
-                <h4>
-                    <strong>Status:</strong> @StatusService.PrinterStatus.status.print_stats.state
-                </h4>
-                <br/>
-                @if (StatusService.PrinterStatus.status.print_stats.state != "standby")
-                {
-                    <strong>File Name:</strong>
-                    @StatusService.PrinterStatus.status.print_stats.filename
-                }
-            </div>
-            <div class="col-md-2">
-                @if (StatusService.PrinterStatus.status.print_stats.state is "printing" or "paused")
-                {
-                    <div class="btn-group" role="group">
-                        @if (StatusService.PrinterStatus.status.print_stats.state is "printing")
-                        {
-                            <button type="button" class="btn btn-secondary" @onclick="OnPausePrint">Pause</button>
-                        }
-                        else
-                        {
-                            <button type="button" class="btn btn-secondary" @onclick="OnResumePrint">Resume</button>
-                        }
-                        <button type="button" class="btn btn-secondary btn-danger" @onclick="OnCancelPrint">Cancel</button>
-                    </div>
-                }
-            </div>
-            @if (StatusService.PrinterStatus.status.print_stats.state is "printing" or "paused")
+        <div class="col-auto pb-2">
+            @if (StatusService.PrinterStatus.status.print_stats.state != "standby")
             {
-                var progress = $"{StatusService.PrinterStatus.status.virtual_sdcard.GetProgress}%";
-                <div class="progress">
-                    <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: @progress">@progress</div>
+                var progress = StatusService.PrinterStatus.status.virtual_sdcard.GetProgress;
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <CircularProgressBar ProgressValue="@progress"></CircularProgressBar>
+                            </div>
+                            @if (StatusService.PrintFileDetails != null)
+                            {
+                                <div class="col-md-6 mt-4">
+                                    <h2>@StatusService.PrintFileDetails.filename</h2>
+                                    <div>
+                                        <h6>
+                                            Layer
+                                            <strong>@StatusService.PrinterStatus.status.virtual_sdcard.file_position</strong> of
+                                            <strong>@StatusService.PrintFileDetails.layer_count</strong>
+                                        </h6>
+                                    </div>
+                                    <div>
+                                        <h6>
+                                            Print time:
+                                            <strong>@StatusService.PrinterStatus.status.print_stats.GetPrintDuration()</strong> Out of
+                                            <strong>@StatusService.PrintFileDetails.GetEstimatedTime()</strong> (estimated)
+                                        </h6>
+                                    </div>
+                                </div>
+                            }
+                            @if (!string.IsNullOrEmpty(StatusService.PrintFileDetails.Base64Image))
+                            {
+                                <div class="col-md-2">
+                                    <img src="data:image/bmp;base64, @(StatusService.PrintFileDetails.Base64Image)" style="width: 100px; height: 100px" alt=""/>
+                                </div>
+                            }
+                            <div class="col-md-2 mt-2">
+                                @if (StatusService.PrinterStatus.status.print_stats.state is "printing" or "paused")
+                                {
+                                    <div class="btn-group" role="group">
+                                        @if (StatusService.PrinterStatus.status.print_stats.state is "printing")
+                                        {
+                                            <button type="button" class="btn btn-secondary" @onclick="OnPausePrint">Pause</button>
+                                        }
+                                        else
+                                        {
+                                            <button type="button" class="btn btn-secondary" @onclick="OnResumePrint">Resume</button>
+                                        }
+                                        <button type="button" class="btn btn-secondary btn-danger" @onclick="OnCancelPrint">Cancel</button>
+                                    </div>
+                                }
+                                @if (StatusService.PrinterStatus.status.print_stats.state is "cancelled")
+                                {
+                                    <button type="button" class="btn btn-secondary" @onclick="OnClearPrint">Clear</button>
+                                }
+                            </div>
+                        </div>
+                    </div>
                 </div>
             }
         </div>
@@ -57,6 +91,9 @@
 
     [Parameter]
     public Action OnResumePrint { get; set; }
+
+    [Parameter]
+    public Action OnClearPrint { get; set; }
 
     private bool DisableCancelButton { get; set; }
 

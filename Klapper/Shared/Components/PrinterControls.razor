@@ -2,10 +2,7 @@
 @inject MoonrakerApiService Api;
 @inject NotificationService Toast
 
-<div class="border p-3 mt-4">
-    <div class="row">
-        <h2 class="text-primary">Printer Controls</h2>
-    </div>
+
     <div class="justify-content-between mb-2 row">
         <div class="col-md-4 pb-2">
             <div class="card">
@@ -26,7 +23,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3 text-center pb-2">
+        <div class="col-md-3 text-center pb-2 justify-content-between">
             <div class="btn-group-vertical d-inline-block me-1 ms-1 text-center" role="group">
                 <button type="button" class="btn btn-secondary" @onclick="() => Move(0, 1)">+</button>
                 <h2>X</h2>
@@ -71,7 +68,6 @@
             </div>
         </div>
     </div>
-</div>
 
 @code
 {

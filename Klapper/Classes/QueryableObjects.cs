@@ -636,6 +636,16 @@ public class PrintStats
     public string filename { get; set; }
     public string state { get; set; }
     public string message { get; set; }
+
+    public string GetPrintDuration()
+    {
+        return TimeSpan.FromSeconds(print_duration).ToString(@"hh\:mm\:ss");
+    }
+    
+    public string GetTotalDuration()
+    {
+        return TimeSpan.FromSeconds(total_duration).ToString(@"hh\:mm\:ss");
+    }
 }
 
 public class Toolhead
