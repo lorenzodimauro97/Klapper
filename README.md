@@ -50,4 +50,10 @@ User=pi
 WantedBy=multi-user.target
 ``` 
 
+# Enable the Klapper service
+```sudo systemctl enable klapper.service```
+
+# Start the Klapper service
+```sudo systemctl start klapper.service```
+
 and it will start listening on ports 5000 and 5001 (for HTTPS).
