@@ -1,6 +1,9 @@
 # Klapper
 Klapper is a free, open-source and not Vue-based Klipper web interface for managing your 3d printer.
 
+![image](https://user-images.githubusercontent.com/50343905/168448853-52b39bcb-264e-4da1-8457-631693d31e78.png) ![image](https://user-images.githubusercontent.com/50343905/168448832-9cee2f41-f1a9-4f13-9d6e-8ba7b84a1a2e.png)
+
+
 # Why
 Because I don't know Vue and I really don't want to learn it. This is also a great opportunity to learn a bit more on how to develop a web application of this relatively small magnitude, and a great opportunity to learn Blazor, too!
 
