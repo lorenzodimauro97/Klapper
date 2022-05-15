@@ -47,8 +47,9 @@
         {
             await RefreshData();
             await InvokeAsync(StateHasChanged);
+			timer.Start();
         };
-        timer.AutoReset = true;
+        timer.AutoReset = false;
         timer.Enabled = true;
     }
 

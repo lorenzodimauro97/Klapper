@@ -49,8 +49,8 @@
     private void SetAutoRefresh()
     {
         var timer = new Timer(1000);
-        timer.Elapsed += async (_, _) => { await InvokeAsync(StateHasChanged); };
-        timer.AutoReset = true;
+        timer.Elapsed += async (_, _) => { await InvokeAsync(StateHasChanged); timer.Start();};
+        timer.AutoReset = false;
         timer.Enabled = true;
     }
 
