@@ -1,0 +1,37 @@
+@using Klapper.Data
+@using Klapper.Classes
+@inject PrinterStatusService StatusService
+@inject MoonrakerApiService Api
+
+<div class="row text-center">
+    <div class="alert alert-danger" role="alert">
+        <h2>Klippy is in error!</h2>
+        <h4>@StatusService.PrinterStatus?.status.webhooks.state_message</h4>
+        <button class="btn btn-success" type="button" @onclick="() => Api.RunGCode(SpecialGCodeCommands.Restart)">
+            Restart
+        </button>
+    </div>
+</div>
+
+@code
+{
+    protected override async Task OnInitializedAsync()
+    {
+        SetKlipperStatusTimer();
+
+        await base.OnInitializedAsync();
+    }
+
+    private void SetKlipperStatusTimer()
+    {
+        var timer = new System.Timers.Timer(500);
+        timer.Elapsed += async (_, _) =>
+        {
+            await InvokeAsync(StateHasChanged);
+            if (StatusService.KlippyIsReady) timer.Stop();
+            timer.Start();
+        };
+        timer.AutoReset = false;
+        timer.Enabled = true;
+    }
+}

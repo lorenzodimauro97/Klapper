@@ -6,7 +6,7 @@
 @inject MoonrakerApiService Api
 
 
-@if (StatusService.KlipperIsRunning && StatusService.KlippyIsReady)
+@if (StatusService.KlippyIsReady)
 {
     <div class="row pb-2">
         <Klapper.Shared.Components.Status.PrinterStatus OnPausePrint="async () => { await Api.PauseCancelResumePrint(0); }"

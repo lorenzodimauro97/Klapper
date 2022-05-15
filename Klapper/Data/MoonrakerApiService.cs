@@ -39,7 +39,6 @@ public class MoonrakerApiService
     }
 
     public string BaseUrl { get; }
-
     public List<(string, string, string)> Log { get; }
 
     /*public async Task<MoonrakerObjectListClass> GetFullObjectList()
@@ -58,7 +57,17 @@ public class MoonrakerApiService
     public async Task<(bool, string)> GetGCodeList()
     {
         var request = new RestRequest("/printer/gcode/help", Method.Post);
-        return await LaunchPostRequest(request, "HELP", true);
+        var result = await LaunchPostRequest(request, "HELP", false);
+        
+        //We log manually so we can create one line for each GCode avaiable
+
+        var helpResult = result.Item2.Replace('{', ' ').Replace('}', ' ').Replace('"', ' ').Replace("result :", "").Split(',');
+
+        foreach (var help in helpResult)
+        {
+            Log.Add(("Server", "Information", help));
+        }
+        return result;
     }
 
     public async Task<(bool, string)> PauseCancelResumePrint(int code)
@@ -162,11 +171,12 @@ public class MoonrakerApiService
                 Log.Add(("Server", "Error", $"Server Returned Code {result.StatusCode}"));
             }
         }
+        else
+        {
+            if (logResponse) Log.Add(("Server", "Information", result.Content));
+        }
 
-        if (logResponse) Log.Add(("Server", "Information", result.Content));
-
-
-        return (result.IsSuccessful, response);
+        return (result.IsSuccessful, result.Content);
     }
 
     private static JToken? Filter(JObject jObject, string filter)

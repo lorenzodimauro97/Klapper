@@ -28,7 +28,8 @@
 
     private void Save()
     {
-        OnSave(Content.Replace("<br/>", "\n"));
+        Content = Content.Replace("<br/>", "\n").Replace("<br>", "\n");
+        OnSave(Content);
     }
 
 }

@@ -14,13 +14,20 @@
 
 @if (StatusService.KlipperIsRunning)
 {
-    if (Info != null && (bool)Info.IsMobile)
+    if (StatusService.KlippyIsReady)
     {
-        <MobileIndex HeaterComponents="_heaterComponents" Sensors="Sensors"></MobileIndex>
+        if (Info != null && (bool)Info.IsMobile)
+        {
+            <MobileIndex HeaterComponents="_heaterComponents" Sensors="Sensors"></MobileIndex>
+        }
+        else
+        {
+            <DesktopIndex HeaterComponents="_heaterComponents" Sensors="Sensors"></DesktopIndex>
+        }
     }
     else
     {
-        <DesktopIndex HeaterComponents="_heaterComponents" Sensors="Sensors"></DesktopIndex>
+        <KlippyError></KlippyError>
     }
 }
 else

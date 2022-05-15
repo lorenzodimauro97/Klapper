@@ -8,7 +8,7 @@
 <RadzenTabs TabPosition="@TabPosition.Top" RenderMode="TabRenderMode.Client">
     <Tabs>
         <RadzenTabsItem Icon="control_camera" Text="Control">
-            @if (StatusService.KlipperIsRunning && StatusService.KlippyIsReady)
+            @if (StatusService.KlippyIsReady)
             {
                 <Klapper.Shared.Components.Status.PrinterStatus OnPausePrint="async () => { await Api.PauseCancelResumePrint(0); }"
                                                                 OnCancelPrint="async () => { await Api.PauseCancelResumePrint(1); }"
@@ -20,7 +20,7 @@
             }
         </RadzenTabsItem>
         <RadzenTabsItem Icon="thermostat" Text="Temperature">
-            @if (StatusService.KlipperIsRunning && StatusService.KlippyIsReady && Sensors != null)
+            @if (StatusService.KlippyIsReady && Sensors != null)
             {
                 @foreach (var heater in Sensors)
                 {
@@ -33,13 +33,13 @@
             }
         </RadzenTabsItem>
         <RadzenTabsItem Icon="insert_drive_file" Text="Files">
-            @if (StatusService.KlipperIsRunning && StatusService.KlippyIsReady)
+            @if (StatusService.KlippyIsReady)
             {
                 <FileGrid></FileGrid>
             }
         </RadzenTabsItem>
         <RadzenTabsItem Icon="terminal" Text="Terminal">
-            @if (StatusService.KlipperIsRunning && StatusService.KlippyIsReady)
+            @if (StatusService.KlippyIsReady)
             {
                 <TerminalLogger></TerminalLogger>
             }
