@@ -1,0 +1,50 @@
+@using Klapper.Data
+@using Klapper.Classes
+@inject MoonrakerApiService Api;
+
+<div class="card">
+    <div class="card-body">
+        <h3 class="card-title text-center">Endstops</h3>
+        @if (_endstops == null)
+        {
+            <div>Loading...</div>
+        }
+        else
+        {
+            <div>X: <strong>@_endstops?.x</strong></div>
+            <div>Y: <strong>@_endstops?.y</strong></div>
+            <div>Z: <strong>@_endstops?.z</strong></div>
+        }
+        </div>
+</div>
+
+@code
+{
+    private Endstop? _endstops;
+    protected override async Task OnInitializedAsync()
+    {
+        SetKlipperStatusTimer();
+
+        await base.OnInitializedAsync();
+    }
+
+    private async Task GetEndstops()
+    {
+        var result = (await Api.GetEndstops());
+        if(result != null)
+        _endstops = result.result;
+    }
+
+    private void SetKlipperStatusTimer()
+    {
+        var timer = new System.Timers.Timer(6000);
+        timer.Elapsed += async (_, _) =>
+        {
+            await GetEndstops();
+            await InvokeAsync(StateHasChanged);
+            timer.Start();
+        };
+        timer.AutoReset = false;
+        timer.Enabled = true;
+    }
+}

@@ -12,7 +12,7 @@
 
 <BrowserDetect @bind-BrowserInfo="@Info"/>
 
-@if (StatusService.KlipperIsRunning)
+@if (StatusService.KlipperIsRunning && StatusService.PrinterStatus != null)
 {
     if (StatusService.KlippyIsReady)
     {
@@ -42,7 +42,7 @@ else
             </div>
         </row>
     }
-    else
+    else if(!StatusService.KlipperIsRunning)
     {
         <row class="text-center h-100">
             <div class="col-sm-12 my-auto">
@@ -50,7 +50,7 @@ else
                     Connection Error
                 </h2 >
                 <h4 >
-                    It seems Klapper can't connect to Moonraker's Address(Currently @Api .BaseUrl).
+                    It seems Klapper can't connect to Moonraker's Address(Currently @Api.BaseUrl).
                 </h4 >
                 <br/>
                 <h4>

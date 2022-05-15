@@ -26,7 +26,6 @@ public class MoonrakerApiService
             _client = new RestClient(new RestClientOptions
             {
                 BaseUrl = new Uri(BaseUrl),
-                MaxTimeout = 300000
             });
         }
         catch (Exception ex)
@@ -197,6 +196,12 @@ public class MoonrakerApiService
     {
         var request = new RestRequest("/printer/objects/query?webhooks&virtual_sdcard&print_stats");
         return await LaunchGetRequest<PrinterStatusRoot>(request, false);
+    }
+    
+    public async Task<EndstopRoot> GetEndstops()
+    {
+        var request = new RestRequest("/printer/query_endstops/status");
+        return await LaunchGetRequest<EndstopRoot>(request, false);
     }
 
     public async Task<(bool, string)> DeleteFile(string file, string root)
