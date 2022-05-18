@@ -27,7 +27,11 @@
                 </ul>
             </div>
             <div class="card-header">
-                <RadzenTextBox disabled="@IsSendingCommand" @bind-Value="@Command" Style="width: 90%"/>
+                <RadzenTextBox 
+                    @onkeypress="e => SendCommand(e)" 
+                    disabled="@IsSendingCommand" 
+                    @bind-Value="@Command" 
+                    Style="width: 90%"/>
                 <button disabled="@IsSendingCommand" class="btn btn-success" type="button" @onclick="SendCommand">Send</button>
             </div>
         </div>
@@ -54,8 +58,16 @@
         timer.Enabled = true;
     }
 
+    private async Task SendCommand(KeyboardEventArgs eventArgs)
+    {
+        if(string.IsNullOrEmpty(Command)) return;
+        if (eventArgs.Code == "Enter") await SendCommand();
+    }
+
     private async Task SendCommand()
     {
+        if(string.IsNullOrEmpty(Command)) return;
+        
         IsSendingCommand = true;
 
         if (Command.Contains("HELP", StringComparison.InvariantCultureIgnoreCase))
