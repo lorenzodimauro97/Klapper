@@ -30,11 +30,7 @@ public class PrinterStatusService
         var timer = new Timer(1000);
         timer.Elapsed += async (_, _) =>
         {
-            await GetKlipperSystemInfo();
-            await GetKlipperPrinterInfo();
-            await GetKlipperPrinterStatus();
-            await GetPrintFileDetails();
-            await GetGcodeMoveToolHead();
+            await ForceRefreshAll();
             timer.Start();
         };
         timer.AutoReset = false;
@@ -47,10 +43,7 @@ public class PrinterStatusService
         await GetKlipperSystemInfo();
         await GetKlipperPrinterStatus();
         await GetPrintFileDetails();
-        if (PrinterIsPrinting)
-        {
-            await GetGcodeMoveToolHead();
-        }
+        await GetGcodeMoveToolHead();
     }
 
     private async Task GetKlipperSystemInfo()
@@ -61,13 +54,11 @@ public class PrinterStatusService
     private async Task GetKlipperPrinterInfo()
     {
         PrinterInfo = (await _api.GetPrinterInfo())?.result;
-        //SystemInfo.
     }
 
     private async Task GetKlipperPrinterStatus()
     {
         PrinterStatus = (await _api.GetPrinterStatus())?.result;
-        //SystemInfo.
     }
 
     private async Task GetPrintFileDetails()
@@ -87,6 +78,7 @@ public class PrinterStatusService
 
     private async Task GetGcodeMoveToolHead()
     {
+        if(!KlippyIsReady) return;
         var objects = await _api.GetObject<MoonrakerQueryResultObject>("gcode_move&toolhead", false);
         GcodeMove = objects.result.status.gcode_move;
         Toolhead = objects.result.status.toolhead;

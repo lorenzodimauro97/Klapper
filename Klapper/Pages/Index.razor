@@ -8,8 +8,15 @@
 @inject MoonrakerApiService Api
 @inject PrinterStatusService StatusService
 
-<PageTitle>Klapper - Index</PageTitle>
+@if (StatusService.PrinterIsPrinting)
+{
+    <PageTitle>Printing - @StatusService.PrinterStatus.status.virtual_sdcard.GetProgress%</PageTitle>
+}
+else
+{
+    <PageTitle>Klapper - Index</PageTitle>
 
+}
 <BrowserDetect @bind-BrowserInfo="@Info"/>
 
 @if (StatusService.KlipperIsRunning && StatusService.PrinterStatus != null)
