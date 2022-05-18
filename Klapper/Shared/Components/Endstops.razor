@@ -5,7 +5,7 @@
 <div class="card">
     <div class="card-body">
         <h3 class="card-title text-center">Endstops</h3>
-        <button type="button" class="btn btn-secondary" @onclick="GetEndstops">
+        <button type="button" disabled="@IsReloadingData" class="btn btn-secondary" @onclick="GetEndstops">
             <span class="oi oi-reload" aria-hidden="true"></span>
         </button>
         @if (_endstops != null)
@@ -20,6 +20,8 @@
 @code
 {
     private Endstop? _endstops;
+    private bool IsReloadingData { get; set; }
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -30,9 +32,11 @@
 
     private async Task GetEndstops()
     {
+        IsReloadingData = true;
         var result = (await Api.GetEndstops());
         if (result != null)
             _endstops = result.result;
+        IsReloadingData = false;
     }
 
     private void SetKlipperStatusTimer()

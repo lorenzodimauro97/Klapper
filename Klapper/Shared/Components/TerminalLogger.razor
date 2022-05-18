@@ -1,6 +1,7 @@
 @using Klapper.Data
 @using System.Timers
 @inject MoonrakerApiService Api
+@inject NotificationService Toast
 
 
 <div class="row">
@@ -42,7 +43,7 @@
 {
     private string Command { get; set; }
     private bool IsSendingCommand { get; set; }
-
+    private bool userWarned = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -60,8 +61,18 @@
 
     private async Task SendCommand(KeyboardEventArgs eventArgs)
     {
-        if(string.IsNullOrEmpty(Command)) return;
-        if (eventArgs.Code == "Enter") await SendCommand();
+        if (eventArgs.Code != "Enter") return;
+        
+        if (string.IsNullOrEmpty(Command) && !userWarned)
+        {
+            ToastNotification.NotificateInfo(Toast, "Press ENTER once again to send command...");
+            userWarned = true;
+        }
+        else if (!string.IsNullOrEmpty(Command))
+        {
+            await SendCommand();
+            userWarned = false;
+        }
     }
 
     private async Task SendCommand()

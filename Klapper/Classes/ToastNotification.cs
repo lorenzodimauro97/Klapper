@@ -15,4 +15,15 @@ public class ToastNotification
             Duration = 7000
         });
     }
+    
+    public static void NotificateInfo(NotificationService Toast, string message)
+    {
+        Toast.Notify(new NotificationMessage
+        {
+            Severity = NotificationSeverity.Info,
+            Detail = message,
+            Summary = "Information",
+            Duration = 7000
+        });
+    }
 }
