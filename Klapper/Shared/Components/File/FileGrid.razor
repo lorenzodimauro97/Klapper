@@ -4,7 +4,8 @@
 @inject NotificationService Toast
 @inject DialogService DialogService
 
-
+<div style="padding-left: 15px; padding-right: 15px">
+<div class="row" style="background-color: #e4eaed">
 <FileCrudOperations
     ButtonConfiguration="0"
     DisableCrudButtons="SelectedGCodeFile == null"
@@ -14,7 +15,8 @@
     RefreshData="async () => await RefreshData()"
     OnDeleteFileDialog="async () => await ShowDeleteFileDialog()"
     OnUpload="async upload => await UploadFiles(upload)"/>
-<div class="row">
+</div>
+</div>
     @if (GCodeFiles?.Count > 0)
     {
         <RadzenDataGrid AllowFiltering="true" AllowPaging="true" PageSize="8" FilterMode="FilterMode.SimpleWithMenu" AllowSorting="true" Data="@GCodeFiles" TItem="GCodeFile" RowSelect="SelectGCodeFile">
@@ -33,7 +35,6 @@
             </Columns>
         </RadzenDataGrid>
     }
-</div>
 
 @code {
 
