@@ -5,25 +5,25 @@
 <div class="card">
     <div class="card-body">
         <h3 class="card-title text-center">Endstops</h3>
-        @if (_endstops == null)
+        <button type="button" class="btn btn-secondary" @onclick="GetEndstops">
+            <span class="oi oi-reload" aria-hidden="true"></span>
+        </button>
+        @if (_endstops != null)
         {
-            <div>Loading...</div>
+            <div>X: <strong>@_endstops?.x.ToUpperInvariant()</strong></div>
+            <div>Y: <strong>@_endstops?.y.ToUpperInvariant()</strong></div>
+            <div>Z: <strong>@_endstops?.z.ToUpperInvariant()</strong></div>
         }
-        else
-        {
-            <div>X: <strong>@_endstops?.x</strong></div>
-            <div>Y: <strong>@_endstops?.y</strong></div>
-            <div>Z: <strong>@_endstops?.z</strong></div>
-        }
-        </div>
+    </div>
 </div>
 
 @code
 {
     private Endstop? _endstops;
+
     protected override async Task OnInitializedAsync()
     {
-        SetKlipperStatusTimer();
+    //SetKlipperStatusTimer();
 
         await base.OnInitializedAsync();
     }
@@ -31,8 +31,8 @@
     private async Task GetEndstops()
     {
         var result = (await Api.GetEndstops());
-        if(result != null)
-        _endstops = result.result;
+        if (result != null)
+            _endstops = result.result;
     }
 
     private void SetKlipperStatusTimer()
