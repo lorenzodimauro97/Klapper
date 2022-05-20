@@ -95,6 +95,9 @@
         <div class="col-auto pb-2">
             <Endstops></Endstops>
         </div>
+        <div class="col-auto pb-2">
+            <Fans></Fans>
+        </div>
 
     </div>
 }
@@ -127,7 +130,11 @@
     private void SetUIRefreshTimer()
     {
         var timer = new Timer(2000);
-        timer.Elapsed += async (_, _) => { await InvokeAsync(StateHasChanged); timer.Start();};
+        timer.Elapsed += async (_, _) =>
+        {
+            await InvokeAsync(StateHasChanged);
+            timer.Start();
+        };
         timer.AutoReset = false;
         timer.Enabled = true;
     }

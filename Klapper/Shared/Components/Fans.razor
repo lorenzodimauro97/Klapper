@@ -1,0 +1,61 @@
+@using Klapper.Data
+@using Klapper.Classes
+@using System.Globalization
+@inject MoonrakerApiService Api;
+
+<div class="card">
+    <div class="card-body">
+        <h3 class="card-title text-center">Fans</h3>
+        @if (fan != null)
+        {
+            <div class="row text-center">
+                <strong>@((int)(fan?.speed * 100))%</strong>
+            </div>
+            <RadzenSlider @bind-Value=@fanSpeed TValue="int" Min="0" Max="100" Change="SetFanSpeed" Style="width: 200px"/>
+        }
+    </div>
+</div>
+
+@code
+{
+    private Fan fan;
+    private bool IsReloadingData { get; set; }
+    private int fanSpeed;
+
+    protected override async Task OnInitializedAsync()
+    {
+        SetKlipperStatusTimer();
+        await base.OnInitializedAsync();
+    }
+
+    private async Task GetFans()
+    {
+        IsReloadingData = true;
+        var result = (await Api.GetObject<MoonrakerQueryResultObject>("fan", false));
+        if (result != null)
+        {
+            fan = result.result.status.fan;
+            fanSpeed = (int)(fan.speed * 100);
+        }
+        IsReloadingData = false;
+    }
+
+    private void SetKlipperStatusTimer()
+    {
+        var timer = new System.Timers.Timer(6000);
+        timer.Elapsed += async (_, _) =>
+        {
+            await GetFans();
+            await InvokeAsync(StateHasChanged);
+            timer.Start();
+        };
+        timer.AutoReset = false;
+        timer.Enabled = true;
+    }
+
+    private async Task SetFanSpeed()
+    {
+        await Api.RunGCode($"M106 S{(fanSpeed * 2.55f).ToString(CultureInfo.InvariantCulture)}");
+        fan.speed = fanSpeed * 2.55f / 255;
+    }
+}
