@@ -160,15 +160,15 @@ public class MoonrakerApiService
         {
             if (result.StatusCode == HttpStatusCode.BadRequest)
             {
-                var rx = new Regex(@"{(.*?)}");
+                var rx = new Regex(@"'message': '(.+?)'");
                 var responseClass = JsonSerializer.Deserialize<ErrorRoot>(result.Content);
-                response = rx.Match(responseClass.error.traceback).Groups[1].Value;
+                response = rx.Match(responseClass.error.traceback).Value;
                 Log.Add(("Server", "Error", response));
+                return (result.IsSuccessful, response);
+
             }
-            else
-            {
-                Log.Add(("Server", "Error", $"Server Returned Code {result.StatusCode}"));
-            }
+
+            Log.Add(("Server", "Error", $"Server Returned Code {result.StatusCode}"));
         }
         else
         {
