@@ -6,41 +6,42 @@
 <div class="card">
     <div class="card-body text-center">
         <h2 class="card-title text-center">Fans</h2>
-            @if (fan != null)
-            {
-                <strong>@((int)(fan?.speed * 100))%</strong>
-            }
+        @if (fan != null)
+        {
+            <strong>@fanSpeed%</strong>
+        }
     </div>
     <div class="card-footer text-center">
-            @if (fan != null)
-            {
-                <RadzenSlider @bind-Value="@fanSpeed" TValue="int" Min="0" Max="100" Change="SetFanSpeed" Style="width: 200px"/>
-            }
+        @if (fan != null)
+        {
+            <RadzenSlider @bind-Value="@fanSpeed" Step="1" TValue="int" Min="0" Max="100" Style="width: 150px" Change="SetFanSpeed"/>
+        }
     </div>
 </div>
 
 @code
 {
     private Fan fan;
-    private bool IsReloadingData { get; set; }
-    private int fanSpeed;
+    private int fanSpeed
+    {
+        get { return (int)(fan.speed * 100); }
+        set { fan.speed = (double)value / 100; }
+    }
 
     protected override async Task OnInitializedAsync()
     {
+        await GetFans();
         SetKlipperStatusTimer();
         await base.OnInitializedAsync();
     }
 
     private async Task GetFans()
     {
-        IsReloadingData = true;
-        var result = (await Api.GetObject<MoonrakerQueryResultObject>("fan", false));
+        var result = await Api.GetObject<MoonrakerQueryResultObject>("fan", false);
         if (result != null)
         {
             fan = result.result.status.fan;
-            fanSpeed = (int)(fan.speed * 100);
         }
-        IsReloadingData = false;
     }
 
     private void SetKlipperStatusTimer()
@@ -58,7 +59,7 @@
 
     private async Task SetFanSpeed()
     {
-        await Api.RunGCode($"M106 S{(fanSpeed * 2.55f).ToString(CultureInfo.InvariantCulture)}");
-        fan.speed = fanSpeed * 2.55f / 255;
+        await Api.RunGCode($"M106 S{(fanSpeed * 2.55 + 1).ToString(CultureInfo.InvariantCulture)}");
+    //fan.speed = fanSpeed * 2.55f / 255;
     }
 }

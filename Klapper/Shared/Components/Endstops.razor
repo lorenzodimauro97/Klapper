@@ -33,7 +33,7 @@
     private async Task GetEndstops()
     {
         IsReloadingData = true;
-        var result = (await Api.GetEndstops());
+        var result = await Api.GetEndstops();
         if (result != null)
             _endstops = result.result;
         IsReloadingData = false;

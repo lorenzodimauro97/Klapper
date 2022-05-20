@@ -5,7 +5,7 @@
 @if (StatusService.PrinterStatus != null)
 {
     <div class="row pb-2">
-        <div class="col-md-2 pb-2">
+        <!-- <div class="col-md-1 pb-2">
             <div class="card">
                 <div class="card-body">
                     <h2 class="card-title text-center">Printer Status</h2>
@@ -14,7 +14,7 @@
                     <strong>@StatusService.PrinterStatus.status.print_stats.state</strong>
                 </div>
             </div>
-        </div>
+        </div> -->
         <div class="col-auto pb-2">
             @if (StatusService.PrinterStatus.status.print_stats.state != "standby")
             {

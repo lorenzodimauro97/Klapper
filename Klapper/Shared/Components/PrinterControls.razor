@@ -86,25 +86,37 @@
     </div>
     <div class="col-md-4">
         <div class="card">
-            <div class="card-body text-center">
+            <div class="card-body text-center justify-content-between">
                 <h2 class="card-title text-center">Flow</h2>
-                <h3>@Flow%</h3>
-                <button type="button" class="btn btn-secondary" @onclick="() => ChangeFlow(true)">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <h3>@Flow%</h3>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="button" class="btn btn-secondary" @onclick="() => ChangeFlow(true)">
                             <span class="oi oi-reload" aria-hidden="true"></span>
                         </button>
+                    </div>
+                </div>
             </div>
             <div class="card-footer text-center">
-                <RadzenSlider @bind-Value="@Flow" Step="1" TValue="int?" Min="0" Max="100" Change="() => ChangeFlow(false)" class="w-75"/>
+                <RadzenSlider @bind-Value="@Flow" Step="1" TValue="int?" Min="0" Max="200" Change="() => ChangeFlow(false)" class="w-75"/>
             </div>
-            <div class="card-body text-center">
+            <div class="card-body text-center justify-content-between">
                 <h2 class="card-title text-center">Speed</h2>
-                <h3>@Speed%</h3>
-                <button type="button" class="btn btn-secondary" @onclick="() => ChangeSpeed(true)">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <h3>@Speed%</h3>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="button" class="btn btn-secondary" @onclick="() => ChangeSpeed(true)">
                             <span class="oi oi-reload" aria-hidden="true"></span>
                         </button>
+                    </div>
+                </div>
             </div>
             <div class="card-footer text-center">
-                <RadzenSlider @bind-Value="@Speed" Step="1" TValue="int?" Min="0" Max="100" Change="() => ChangeSpeed(false)" class="w-75"/>
+                <RadzenSlider @bind-Value="@Speed" Step="1" TValue="int?" Min="0" Max="200" Change="() => ChangeSpeed(false)" class="w-75"/>
             </div>
         </div>
     </div>
@@ -120,13 +132,13 @@
 
     private int? Flow
     {
-        get { return (int)(StatusService.GcodeMove?.extrude_factor * 100); }
+        get => (int)(StatusService.GcodeMove?.extrude_factor * 100);
         set { StatusService.GcodeMove.extrude_factor = (double)value / 100; }
     }
 
     private int? Speed
     {
-        get { return (int)(StatusService.GcodeMove?.speed_factor * 100); }
+        get => ((int)(StatusService.GcodeMove?.speed_factor * 100))!;
         set { StatusService.GcodeMove.speed_factor = (double)value / 100; }
     }
 
@@ -201,7 +213,11 @@
 
         command += "F5000";
 
+        await Api.RunGCode("G91");
+        
         var result = await Api.RunGCode(command);
+        
+        await Api.RunGCode("G90");
 
         if (!result.Item1)
             ToastNotification.Notificate(Toast, result.Item1, badMessage: result.Item2);
