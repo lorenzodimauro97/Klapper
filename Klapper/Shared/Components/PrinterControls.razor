@@ -19,8 +19,10 @@
                 </div>
             </div>
             <div class="card-footer text-center">
-                <RadzenSlider @bind-Value="@MovementLength" Step="10" TValue="float" Min="0" Max="500" class="w-75"/>
+                <RadzenSlider @bind-Value="@MovementLength" Step="0.1" TValue="float" Min="0" Max="500" class="w-50"/>
                 @MovementLength mm
+                <RadzenSlider @bind-Value="@MovementFeedRate" Step="10" TValue="float" Min="0" Max="1000" class="w-50"/>
+                @MovementFeedRate mm/min
             </div>
             <div class="card-body text-center">
                 <h2 class="card-title text-center">Extrusion Distance</h2>
@@ -34,8 +36,10 @@
                 </div>
             </div>
             <div class="card-footer text-center">
-                <RadzenSlider @bind-Value="@ExtrusionDistance" Step="10" TValue="float" Min="0" Max="@MaxExtrusion" class="w-75"/>
+                <RadzenSlider @bind-Value="@ExtrusionDistance" Step="0.1" TValue="float" Min="0" Max="@MaxExtrusion" class="w-50"/>
                 @ExtrusionDistance mm
+                <RadzenSlider @bind-Value="@ExtrusionFeedRate" Step="10" TValue="float" Min="0" Max="1000" class="w-50"/>
+                @ExtrusionFeedRate mm/min
             </div>
 
         </div>
@@ -127,18 +131,20 @@
     [Parameter]
     public int MaxExtrusion { get; set; }
 
-    private float ExtrusionDistance { get; set; }
-    private float MovementLength { get; set; }
+    private float ExtrusionDistance { get; set; } = 10;
+    private float ExtrusionFeedRate { get; set; } = 300;
+    private float MovementLength { get; set; } = 10;
+    private float MovementFeedRate { get; set; } = 300;
 
     private int? Flow
     {
-        get => (int)(StatusService.GcodeMove?.extrude_factor * 100);
+        get => StatusService.GcodeMove != null ? (int)(StatusService.GcodeMove?.extrude_factor * 100) : 0;
         set { StatusService.GcodeMove.extrude_factor = (double)value / 100; }
     }
 
     private int? Speed
     {
-        get => ((int)(StatusService.GcodeMove?.speed_factor * 100))!;
+        get => StatusService.GcodeMove != null ? (int)(StatusService.GcodeMove?.speed_factor * 100) : 0;
         set { StatusService.GcodeMove.speed_factor = (double)value / 100; }
     }
 
@@ -151,7 +157,7 @@
 
     private void SetKlipperStatusTimer()
     {
-        var timer = new System.Timers.Timer(1000);
+        var timer = new System.Timers.Timer(2000);
         timer.Elapsed += async (_, _) =>
         {
             await InvokeAsync(StateHasChanged);
@@ -211,12 +217,13 @@
                 break;
         }
 
-        command += "F5000";
+        if(axis == 3)command += $"F{ExtrusionFeedRate}";
+        else command += $"F{MovementFeedRate}";
 
         await Api.RunGCode("G91");
-        
+
         var result = await Api.RunGCode(command);
-        
+
         await Api.RunGCode("G90");
 
         if (!result.Item1)

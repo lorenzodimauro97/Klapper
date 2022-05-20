@@ -147,6 +147,19 @@ public class MoonrakerApiService
         return deserializedClass;
     }
 
+    private static string GetTracebackMessage(string traceback)
+    {
+        var array = traceback.Split("\n");
+
+        var message = array.First(x => x.Contains("message", StringComparison.InvariantCultureIgnoreCase));
+
+        var singleQuote = message.Contains('\'', StringComparison.InvariantCultureIgnoreCase);
+
+        var rx = singleQuote ? new Regex(@"'message':(.*)'") : new Regex(@"'message':(.*)""");
+
+        return rx.Match(message).Value;
+    }
+
     private async Task<(bool, string)> LaunchPostRequest(RestRequest request, string command = "",
         bool logResponse = false)
     {
@@ -160,9 +173,8 @@ public class MoonrakerApiService
         {
             if (result.StatusCode == HttpStatusCode.BadRequest)
             {
-                var rx = new Regex(@"'message': '(.+?)'");
                 var responseClass = JsonSerializer.Deserialize<ErrorRoot>(result.Content);
-                response = rx.Match(responseClass.error.traceback).Value;
+                response = GetTracebackMessage(responseClass.error.traceback);
                 Log.Add(("Server", "Error", response));
                 return (result.IsSuccessful, response);
 
