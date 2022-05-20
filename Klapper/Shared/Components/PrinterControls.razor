@@ -20,8 +20,24 @@
             </div>
             <div class="card-footer text-center">
                 <RadzenSlider @bind-Value="@MovementLength" Step="10" TValue="float" Min="0" Max="500" class="w-75"/>
-                @MovementLength
+                @MovementLength mm
             </div>
+            <div class="card-body text-center">
+                <h2 class="card-title text-center">Extrusion Distance</h2>
+                <div class="btn-group d-inline-block" role="group">
+                    <button type="button" class="btn btn-secondary" @onclick="() => ExtrusionDistance = 0.1f">0.1mm</button>
+                    <button type="button" class="btn btn-secondary" @onclick="() => ExtrusionDistance = 1f">1mm</button>
+                    <button type="button" class="btn btn-secondary" @onclick="() => ExtrusionDistance = 10f">10mm</button>
+                    <button type="button" class="btn btn-secondary" @onclick="() => ExtrusionDistance = 20f">20mm</button>
+                    <button type="button" class="btn btn-secondary" @onclick="() => ExtrusionDistance = 50f">50mm</button>
+                    <button type="button" class="btn btn-secondary" @onclick="() => ExtrusionDistance = 100f">100mm</button>
+                </div>
+            </div>
+            <div class="card-footer text-center">
+                <RadzenSlider @bind-Value="@ExtrusionDistance" Step="10" TValue="float" Min="0" Max="@MaxExtrusion" class="w-75"/>
+                @ExtrusionDistance mm
+            </div>
+
         </div>
     </div>
     <div class="col-md-3 text-center pb-2 justify-content-between">
@@ -71,19 +87,24 @@
     <div class="col-md-4">
         <div class="card">
             <div class="card-body text-center">
-                <h2 class="card-title text-center">Extrusion Distance</h2>
-                <div class="btn-group d-inline-block" role="group">
-                    <button type="button" class="btn btn-secondary" @onclick="() => ExtrusionDistance = 0.1f">0.1mm</button>
-                    <button type="button" class="btn btn-secondary" @onclick="() => ExtrusionDistance = 1f">1mm</button>
-                    <button type="button" class="btn btn-secondary" @onclick="() => ExtrusionDistance = 10f">10mm</button>
-                    <button type="button" class="btn btn-secondary" @onclick="() => ExtrusionDistance = 20f">20mm</button>
-                    <button type="button" class="btn btn-secondary" @onclick="() => ExtrusionDistance = 50f">50mm</button>
-                    <button type="button" class="btn btn-secondary" @onclick="() => ExtrusionDistance = 100f">100mm</button>
-                </div>
+                <h2 class="card-title text-center">Flow</h2>
+                <h3>@Flow%</h3>
+                <button type="button" class="btn btn-secondary" @onclick="() => ChangeFlow(true)">
+                            <span class="oi oi-reload" aria-hidden="true"></span>
+                        </button>
             </div>
             <div class="card-footer text-center">
-                <RadzenSlider @bind-Value="@ExtrusionDistance" Step="10" TValue="float" Min="0" Max="@MaxExtrusion" class="w-75"/>
-                @ExtrusionDistance
+                <RadzenSlider @bind-Value="@Flow" Step="1" TValue="int?" Min="0" Max="100" Change="() => ChangeFlow(false)" class="w-75"/>
+            </div>
+            <div class="card-body text-center">
+                <h2 class="card-title text-center">Speed</h2>
+                <h3>@Speed%</h3>
+                <button type="button" class="btn btn-secondary" @onclick="() => ChangeSpeed(true)">
+                            <span class="oi oi-reload" aria-hidden="true"></span>
+                        </button>
+            </div>
+            <div class="card-footer text-center">
+                <RadzenSlider @bind-Value="@Speed" Step="1" TValue="int?" Min="0" Max="100" Change="() => ChangeSpeed(false)" class="w-75"/>
             </div>
         </div>
     </div>
@@ -96,6 +117,18 @@
 
     private float ExtrusionDistance { get; set; }
     private float MovementLength { get; set; }
+
+    private int? Flow
+    {
+        get { return (int)(StatusService.GcodeMove?.extrude_factor * 100); }
+        set { StatusService.GcodeMove.extrude_factor = (double)value / 100; }
+    }
+
+    private int? Speed
+    {
+        get { return (int)(StatusService.GcodeMove?.speed_factor * 100); }
+        set { StatusService.GcodeMove.speed_factor = (double)value / 100; }
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -114,6 +147,20 @@
         };
         timer.AutoReset = false;
         timer.Enabled = true;
+    }
+
+    private async Task ChangeFlow(bool reset)
+    {
+        if (reset) await Api.RunGCode($"M221 S100");
+        else
+            await Api.RunGCode($"M221 S{Flow}");
+    }
+
+    private async Task ChangeSpeed(bool reset)
+    {
+        if (reset) await Api.RunGCode($"M220 S100");
+        else
+            await Api.RunGCode($"M220 S{Speed}");
     }
 
     private async Task Home()

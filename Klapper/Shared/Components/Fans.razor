@@ -4,15 +4,18 @@
 @inject MoonrakerApiService Api;
 
 <div class="card">
-    <div class="card-body">
-        <h3 class="card-title text-center">Fans</h3>
-        @if (fan != null)
-        {
-            <div class="row text-center">
+    <div class="card-body text-center">
+        <h2 class="card-title text-center">Fans</h2>
+            @if (fan != null)
+            {
                 <strong>@((int)(fan?.speed * 100))%</strong>
-            </div>
-            <RadzenSlider @bind-Value=@fanSpeed TValue="int" Min="0" Max="100" Change="SetFanSpeed" Style="width: 200px"/>
-        }
+            }
+    </div>
+    <div class="card-footer text-center">
+            @if (fan != null)
+            {
+                <RadzenSlider @bind-Value="@fanSpeed" TValue="int" Min="0" Max="100" Change="SetFanSpeed" Style="width: 200px"/>
+            }
     </div>
 </div>
 
