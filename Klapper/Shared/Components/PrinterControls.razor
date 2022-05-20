@@ -93,11 +93,9 @@
             <div class="card-body text-center justify-content-between">
                 <h2 class="card-title text-center">Flow</h2>
                 <div class="row text-center">
-                    <div class="col-md-3">
-                        <h3>@Flow%</h3>
-                    </div>
-                    <div class="col-md-3">
-                        <button type="button" class="btn btn-secondary" @onclick="() => ChangeFlow(true)">
+                       <div class="d-flex flex-row justify-content-center align-items-center">
+                        <h3 style="padding-right: 10px">@Flow%</h3>
+                    <button type="button" class="btn btn-secondary" @onclick="() => ChangeFlow(true)">
                             <span class="oi oi-reload" aria-hidden="true"></span>
                         </button>
                     </div>
@@ -109,10 +107,8 @@
             <div class="card-body text-center justify-content-between">
                 <h2 class="card-title text-center">Speed</h2>
                 <div class="row text-center">
-                    <div class="col-md-3">
-                        <h3>@Speed%</h3>
-                    </div>
-                    <div class="col-md-3">
+                       <div class="d-flex flex-row justify-content-center align-items-center">
+                        <h3 style="padding-right: 10px">@Speed%</h3>
                         <button type="button" class="btn btn-secondary" @onclick="() => ChangeSpeed(true)">
                             <span class="oi oi-reload" aria-hidden="true"></span>
                         </button>
