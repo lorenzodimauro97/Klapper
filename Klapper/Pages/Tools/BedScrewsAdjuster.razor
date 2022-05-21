@@ -1,0 +1,198 @@
+@page "/Tools/BedScrewsAdjuster"
+@using Klapper.Classes
+@using Klapper.Data
+@using System.Text.Json
+@inject MoonrakerApiService Api
+@inject NotificationService Toast;
+
+<div class="row text-center">
+    <h2>Bed Screws Adjustment Tool</h2>
+</div>
+
+<div class="row pb-4">
+    <div class="btn-group me-1 ms-1 text-center" disabled="@isStartingBedAdjustment" role="group">
+        @if (!_isAdjusting)
+        {
+            <button type="button" class="btn btn-success" @onclick="StartScrewAdjustment">Start Bed Screw Adjustment</button>
+        }
+        else
+        {
+            <button type="button" class="btn btn-secondary" @onclick="AdjustScrew">Adjust</button>
+            <button type="button" class="btn btn-danger" @onclick="StopScrewAdjustment">Stop Adjusting</button>
+        }
+    </div>
+</div>
+
+<div>
+    <div class="col-12 col-lg-10 col-xl-8 mx-auto text-center">
+        <h2 class="h3 mb-4 page-title">Settings</h2>
+        <div class="my-4">
+
+            <div class="list-group mb-5 shadow">
+                <div class="list-group-item">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <strong class="mb-2">Home Axis Before / After the adjustment</strong>
+                        </div>
+                        <div class="col-auto">
+                            <div class="custom-control custom-switch">
+                                <RadzenCheckBox @bind-Value="home"></RadzenCheckBox>
+                                <span class="custom-control-label"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <strong class="mb-2">Mirror X Axis</strong>
+                        </div>
+                        <div class="col-auto">
+                            <div class="custom-control custom-switch">
+                                <RadzenCheckBox @bind-Value="mirrorX"></RadzenCheckBox>
+                                <span class="custom-control-label"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <strong class="mb-2">Mirror Y Axis</strong>
+                        </div>
+                        <div class="col-auto">
+                            <div class="custom-control custom-switch">
+                                <RadzenCheckBox @bind-Value="mirrorY"></RadzenCheckBox>
+                                <span class="custom-control-label"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    @if (BedScrews != null)
+    {
+        var groupedScrews = BedScrews
+            .GroupBy(u => u.Y)
+            .Select(grp => grp.ToList())
+            .ToList();
+
+        if (mirrorY) groupedScrews.Reverse();
+        foreach (var screws in groupedScrews)
+        {
+            if (mirrorX) screws.Reverse();
+            <div class="row pb-4">
+                @foreach (var screw in screws)
+                {
+                    <div class="col-md-6 text-center">
+                        <div>
+                            <span class="oi oi-cog" style="font-size: @(90 * screw.SizeMultiplier)px; color: @screw.Color" aria-hidden="true"></span>
+                            <div>X: <strong>@screw.X</strong> Y: <strong>@screw.Y</strong></div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private List<Screw> BedScrews { get; set; }
+    private int index;
+    private bool _isAdjusting;
+    private bool home = true;
+    private bool mirrorX;
+    private bool mirrorY;
+    bool isStartingBedAdjustment;
+
+    protected override async Task OnInitializedAsync()
+    {
+        BedScrews = GetScrews(GetJsonElement(await Api.GetObject<JsonElement>("configfile", false), "result.status.configfile.settings.bed_screws"));
+
+        if (BedScrews == null || BedScrews.Count == 0) ToastNotification.Notificate(Toast, false, badMessage: "bed_screws section is missing in printer config! Visual Helper will not be enabled.");
+
+        await base.OnInitializedAsync();
+    }
+
+    private static List<Screw> GetScrews(JsonElement bed_screws)
+    {
+        var array = bed_screws.ToString().Split(", ");
+
+        var screws = new List<Screw>();
+
+        for (var i = 0; i < array.Length; i++)
+        {
+            var propertyArray = array[i].Split(':');
+            if (propertyArray.Length < 2 ||
+                propertyArray[0].Contains("name", StringComparison.InvariantCultureIgnoreCase) ||
+                !propertyArray[0].Contains("screw", StringComparison.InvariantCultureIgnoreCase)) continue;
+            screws.Add(new Screw($"{array[i]}, {array[i + 1]}"));
+        }
+        return screws;
+    }
+
+    private static JsonElement GetJsonElement(JsonElement jsonElement, string path)
+    {
+        if (jsonElement.ValueKind == JsonValueKind.Null ||
+            jsonElement.ValueKind == JsonValueKind.Undefined)
+        {
+            return default;
+        }
+
+        var segments =
+            path.Split(new[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
+
+        foreach (var t in segments)
+        {
+            jsonElement = jsonElement.TryGetProperty(t, out JsonElement value) ? value : default;
+
+            if (jsonElement.ValueKind == JsonValueKind.Null ||
+                jsonElement.ValueKind == JsonValueKind.Undefined)
+            {
+                return default;
+            }
+        }
+
+        return jsonElement;
+    }
+
+    private async Task StartScrewAdjustment()
+    {
+        isStartingBedAdjustment = true;
+    //if(home) await Api.RunGCode("G28");
+    //await Api.RunGCode("BED_SCREWS_ADJUST");
+        _isAdjusting = true;
+        isStartingBedAdjustment = false;
+        BedScrews[index].Color = "#FF5733";
+        BedScrews[index].SizeMultiplier = 1.5f;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task StopScrewAdjustment()
+    {
+        await Api.RunGCode("ABORT");
+        if (home) await Api.RunGCode("G28");
+        BedScrews[index].Color = "#555555";
+        BedScrews[index].SizeMultiplier = 1;
+        index = 0;
+        _isAdjusting = false;
+    }
+
+    private async Task AdjustScrew()
+    {
+        await Api.RunGCode("ADJUSTED");
+        BedScrews[index].Color = "#555555";
+        BedScrews[index].SizeMultiplier = 1;
+        index++;
+        if (index >= BedScrews.Count) index = 0;
+        BedScrews[index].Color = "#FF5733";
+        BedScrews[index].SizeMultiplier = 1.5f;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void MirrorY()
+    {
+        var group = BedScrews.GroupBy(x => x.X);
+    }
+
+}

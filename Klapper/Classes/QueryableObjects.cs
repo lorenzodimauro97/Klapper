@@ -1,6 +1,8 @@
 // Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(myJsonResponse);
 
+using System.Globalization;
 using System.Runtime.Serialization;
+using System.Text.RegularExpressions;
 
 namespace Klapper.Classes;
 
@@ -604,6 +606,26 @@ public class McuConstants
     public int PWM_MAX { get; set; }
     public string MCU { get; set; }
     public int CLOCK_FREQ { get; set; }
+}
+
+public class Screw
+{
+    public float X { get; set; }
+    public float Y { get; set; }
+    public string Name { get; set; }
+    public string Color { get; set; } = "#555555";
+    public float SizeMultiplier { get; set; } = 1;
+
+    public Screw(string screwString)
+    {
+        var array = screwString.Replace('"', ' ').Split(':');
+        Name = array[0];
+        
+        var coords = string.Join(";", Regex.Matches(array[1], @"\[(.+?)\]")
+            .Select(m => m.Groups[1].Value)).Split(',');
+        X = float.Parse(coords[0], CultureInfo.InvariantCulture);
+        Y = float.Parse(coords[1], CultureInfo.InvariantCulture);
+    }
 }
 
 public class Heaters
