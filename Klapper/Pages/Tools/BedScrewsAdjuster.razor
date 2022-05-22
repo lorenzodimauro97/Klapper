@@ -4,6 +4,7 @@
 @using System.Text.Json
 @inject MoonrakerApiService Api
 @inject NotificationService Toast;
+@inject PrinterStatusService StatusService
 
 <div class="row text-center">
     <h2>Bed Screws Adjustment Tool</h2>
@@ -11,7 +12,7 @@
 
 <div class="row pb-4">
     <div class="btn-group me-1 ms-1 text-center" disabled="@isStartingBedAdjustment" role="group">
-        @if (!_isAdjusting)
+        @if (!StatusService.PrinterIsAdjustingScrews)
         {
             <button type="button" class="btn btn-success" @onclick="StartScrewAdjustment">Start Bed Screw Adjustment</button>
         }
@@ -98,8 +99,6 @@
 
 @code {
     private List<Screw> BedScrews { get; set; }
-    private int index;
-    private bool _isAdjusting;
     private bool home = true;
     private bool mirrorX;
     private bool mirrorY;
@@ -109,7 +108,10 @@
     {
         BedScrews = GetScrews(GetJsonElement(await Api.GetObject<JsonElement>("configfile", false), "result.status.configfile.settings.bed_screws"));
 
-        if (BedScrews == null || BedScrews.Count == 0) ToastNotification.Notificate(Toast, false, badMessage: "bed_screws section is missing in printer config! Visual Helper will not be enabled.");
+        if (BedScrews == null || BedScrews.Count == 0)
+            ToastNotification.Notificate(Toast, false, badMessage: "bed_screws section is missing in printer config! Visual Helper will not be enabled.");
+
+        if (StatusService.PrinterIsAdjustingScrews) AdjustScrewColor(true);
 
         await base.OnInitializedAsync();
     }
@@ -159,12 +161,16 @@
     private async Task StartScrewAdjustment()
     {
         isStartingBedAdjustment = true;
-        if(home) await Api.RunGCode("G28");
-        await Api.RunGCode("BED_SCREWS_ADJUST");
-        _isAdjusting = true;
+        if (home) await Api.RunGCode("G28");
+        var launch = await Api.RunGCode("BED_SCREWS_ADJUST");
+        if (!launch.Item1)
+        {
+            ToastNotification.Notificate(Toast, false, badMessage: launch.Item2);
+            return;
+        }
+        StatusService.PrinterIsAdjustingScrews = true;
         isStartingBedAdjustment = false;
-        BedScrews[index].Color = "#FF5733";
-        BedScrews[index].SizeMultiplier = 1.5f;
+        AdjustScrewColor(true);
         await InvokeAsync(StateHasChanged);
     }
 
@@ -172,27 +178,33 @@
     {
         await Api.RunGCode("ABORT");
         if (home) await Api.RunGCode("G28");
-        BedScrews[index].Color = "#555555";
-        BedScrews[index].SizeMultiplier = 1;
-        index = 0;
-        _isAdjusting = false;
+        AdjustScrewColor(false);
+        StatusService.PrinterScrewAdjustIndex = 0;
+        StatusService.PrinterIsAdjustingScrews = false;
     }
 
     private async Task AdjustScrew()
     {
         await Api.RunGCode("ADJUSTED");
-        BedScrews[index].Color = "#555555";
-        BedScrews[index].SizeMultiplier = 1;
-        index++;
-        if (index >= BedScrews.Count) index = 0;
-        BedScrews[index].Color = "#FF5733";
-        BedScrews[index].SizeMultiplier = 1.5f;
+        AdjustScrewColor(false);
+        StatusService.PrinterScrewAdjustIndex++;
+        if (StatusService.PrinterScrewAdjustIndex >= BedScrews.Count) StatusService.PrinterScrewAdjustIndex = 0;
+        AdjustScrewColor(true);
         await InvokeAsync(StateHasChanged);
     }
 
-    private void MirrorY()
+    private void AdjustScrewColor(bool glowUp)
     {
-        var group = BedScrews.GroupBy(x => x.X);
-    }
+        string color;
+        float multiplier = 1;
+        if (glowUp)
+        {
+            color = "#FF5733";
+            multiplier = 1.5f;
+        }
+        else color = "#555555";
 
-}
+        BedScrews[StatusService.PrinterScrewAdjustIndex].Color = color;
+        BedScrews[StatusService.PrinterScrewAdjustIndex].SizeMultiplier = multiplier;
+    }
+    }

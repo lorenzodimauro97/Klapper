@@ -24,6 +24,8 @@ public class PrinterStatusService
     public bool KlipperIsRunning => SystemInfo?.service_state.klipper.active_state == "active";
     public bool PrinterIsPrinting => PrinterStatus?.status.print_stats.state == "printing";
     public bool KlippyIsReady => PrinterStatus?.status.webhooks.state == "ready";
+    public bool PrinterIsAdjustingScrews { get; set; }
+    public int PrinterScrewAdjustIndex { get; set; }
 
     private void SetKlipperStatusTimer()
     {
