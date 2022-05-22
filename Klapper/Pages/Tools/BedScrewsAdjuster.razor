@@ -128,7 +128,7 @@
                 !propertyArray[0].Contains("screw", StringComparison.InvariantCultureIgnoreCase)) continue;
             screws.Add(new Screw($"{array[i]}, {array[i + 1]}"));
         }
-        return screws;
+        return screws.OrderBy(x => x.Name).ToList();
     }
 
     private static JsonElement GetJsonElement(JsonElement jsonElement, string path)
@@ -159,8 +159,8 @@
     private async Task StartScrewAdjustment()
     {
         isStartingBedAdjustment = true;
-    //if(home) await Api.RunGCode("G28");
-    //await Api.RunGCode("BED_SCREWS_ADJUST");
+        if(home) await Api.RunGCode("G28");
+        await Api.RunGCode("BED_SCREWS_ADJUST");
         _isAdjusting = true;
         isStartingBedAdjustment = false;
         BedScrews[index].Color = "#FF5733";
