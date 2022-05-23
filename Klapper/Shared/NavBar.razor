@@ -15,6 +15,9 @@
                 <li class="nav-item">
                     <a class="nav-link" href="PrinterConfiguration" @onclick="ToggleNavMenu">Printer Configuration</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="KlapperSettings" @onclick="ToggleNavMenu">Settings</a>
+                </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         Tools
@@ -22,6 +25,9 @@
                     <ul class="dropdown-menu" aria-labelledby="navbarScrollingDropdown">
                         <li>
                             <a class="dropdown-item" href="/Tools/BedScrewsAdjuster" @onclick="ToggleNavMenu">Bed Screws Adjuster</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="/Tools/PIDCalibrator" @onclick="ToggleNavMenu">PID Calibrator</a>
                         </li>
                         <li>
                             <hr class="dropdown-divider">
@@ -44,4 +50,5 @@
     {
         collapseNavMenu = !collapseNavMenu;
     }
+
 }

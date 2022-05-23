@@ -10,27 +10,24 @@
     <h2>Bed Screws Adjustment Tool</h2>
 </div>
 
-<div class="row pb-4">
-    <div class="btn-group me-1 ms-1 text-center" disabled="@isStartingBedAdjustment" role="group">
-        @if (!StatusService.PrinterIsAdjustingScrews)
-        {
-            <button type="button" class="btn btn-success" @onclick="StartScrewAdjustment">Start Bed Screw Adjustment</button>
-        }
-        else
-        {
-            <button type="button" class="btn btn-secondary" @onclick="AdjustScrew">Adjust</button>
-            <button type="button" class="btn btn-danger" @onclick="StopScrewAdjustment">Stop Adjusting</button>
-        }
-    </div>
-</div>
-
 <div>
     <div class="col-12 col-lg-10 col-xl-8 mx-auto text-center">
-        <h2 class="h3 mb-4 page-title">Settings</h2>
         <div class="my-4">
-
             <div class="list-group mb-5 shadow">
                 <div class="list-group-item">
+                    <div class="row align-items-center pb-2">
+                        <div class="btn-group text-center" disabled="@printerIsOperating" role="group">
+                            @if (!StatusService.PrinterIsAdjustingScrews)
+                            {
+                                <button type="button" class="btn btn-success" disabled="@printerIsOperating" @onclick="StartScrewAdjustment">Start Bed Screw Adjustment</button>
+                            }
+                            else
+                            {
+                                <button type="button" class="btn btn-secondary" disabled="@printerIsOperating" @onclick="AdjustScrew">Adjust</button>
+                                <button type="button" class="btn btn-danger" disabled="@printerIsOperating" @onclick="StopScrewAdjustment">Stop Adjusting</button>
+                            }
+                        </div>
+                    </div>
                     <div class="row align-items-center">
                         <div class="col">
                             <strong class="mb-2">Home Axis Before / After the adjustment</strong>
@@ -102,7 +99,7 @@
     private bool home = true;
     private bool mirrorX;
     private bool mirrorY;
-    bool isStartingBedAdjustment;
+    bool printerIsOperating;
 
     protected override async Task OnInitializedAsync()
     {
@@ -160,7 +157,7 @@
 
     private async Task StartScrewAdjustment()
     {
-        isStartingBedAdjustment = true;
+        printerIsOperating = true;
         if (home) await Api.RunGCode("G28");
         var launch = await Api.RunGCode("BED_SCREWS_ADJUST");
         if (!launch.Item1)
@@ -169,27 +166,30 @@
             return;
         }
         StatusService.PrinterIsAdjustingScrews = true;
-        isStartingBedAdjustment = false;
+        printerIsOperating = false;
         AdjustScrewColor(true);
         await InvokeAsync(StateHasChanged);
     }
 
     private async Task StopScrewAdjustment()
     {
+        printerIsOperating = true;
         await Api.RunGCode("ABORT");
         if (home) await Api.RunGCode("G28");
         AdjustScrewColor(false);
         StatusService.PrinterScrewAdjustIndex = 0;
-        StatusService.PrinterIsAdjustingScrews = false;
+        StatusService.PrinterIsAdjustingScrews = printerIsOperating = false;
     }
 
     private async Task AdjustScrew()
     {
+        printerIsOperating = true;
         await Api.RunGCode("ADJUSTED");
         AdjustScrewColor(false);
         StatusService.PrinterScrewAdjustIndex++;
         if (StatusService.PrinterScrewAdjustIndex >= BedScrews.Count) StatusService.PrinterScrewAdjustIndex = 0;
         AdjustScrewColor(true);
+        printerIsOperating = false;
         await InvokeAsync(StateHasChanged);
     }
 
