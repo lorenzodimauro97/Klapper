@@ -30,7 +30,7 @@ It is possible to generate a certificate using the command "dotnet dev-certs htt
 If you just don't care about running with HTTPS, you may remove the Https endpoint from the appsettings.json file, so it looks like this:
 ![image](https://user-images.githubusercontent.com/50343905/168447046-20bd6fe4-963e-4bbc-bd8e-487c9de710b4.png)
 
-WARNING: For this to run properly, it is imperative that nginx request timeout be set to a much more suitable number than 60 seconds, otherwise some Tools may not properly work!
+WARNING: For Klapper to run properly, it is imperative that nginx request timeout be set to a much more suitable number than 60 seconds, otherwise some Tools may not properly work!
 
 This is how I expect your /etc/nginx/nginx.conf to be:
 
