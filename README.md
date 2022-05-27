@@ -10,10 +10,11 @@ Because I don't know Vue and I really don't want to learn it. This is also a gre
 # What's the end goal here?
 The idea is to implement everything Fluidd and Moonraker has, plus:
 - Custom 3D GCode viewer with realtime nozzle position
+- Custom Tools to automate Calibrating your printer (eg: Manual Leveling Tool, PID Calibration Tool, etc)
 
 # What's missing, currently?
-- A lot of simple information (Eg: ~~Number of layers~~, Flow Rate)
-- A lot of controls (Eg: ~~Extruder~~ / Motor force)
+- A a couple simple information (Eg: ~~Number of layers~~, Flow Rate)
+~~- A lot of controls (Eg: Extruder / Motor force)~~
 ~~-	Config Editing~~
 - Webcam interface
 - 3D GCode viewer with realtime nozzle position
@@ -29,6 +30,11 @@ It is possible to generate a certificate using the command "dotnet dev-certs htt
 If you just don't care about running with HTTPS, you may remove the Https endpoint from the appsettings.json file, so it looks like this:
 ![image](https://user-images.githubusercontent.com/50343905/168447046-20bd6fe4-963e-4bbc-bd8e-487c9de710b4.png)
 
+WARNING: For Klapper to run properly, it is imperative that nginx request timeout be set to a much more suitable number than 60 seconds, otherwise some Tools may not properly work!
+
+This is how I expect your /etc/nginx/nginx.conf to be:
+
+![image](https://user-images.githubusercontent.com/50343905/170728932-35a710a7-bf5b-4db7-82ea-51790bd99d16.png)
 
 On Windows, simply run Klapper.exe and let the Kestrel server do the magic!
 
