@@ -9,6 +9,8 @@ builder.Services.AddServerSideBlazor();
 
 builder.Services.AddSingleton<MoonrakerApiService>();
 builder.Services.AddSingleton<PrinterStatusService>();
+builder.Services.AddSingleton<PIDCalibrationService>();
+builder.Services.AddSingleton<BedScrewsAdjusterService>();
 
 builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<DialogService>();

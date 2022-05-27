@@ -3,9 +3,8 @@
 @using Klapper.Classes
 @using System.Text
 @using System.Globalization
-@inject MoonrakerApiService Api
-@inject PrinterStatusService StatusService
-@inject NotificationService Toast;
+@inject NotificationService Toast
+@inject PIDCalibrationService PidService
 
 <div class="row text-center">
     <h2>PID Calibrator</h2>
@@ -14,21 +13,21 @@
     <div class="col-md-6 col-lg-4 col-xl-3 p-3">
         <RadzenCard>
             <h4 class="mb-4">Select Heater</h4>
-            <RadzenDropDown Disabled="pidIsCalibrating" AllowClear="true" TValue="string" Class="w-100"
-                            Data="@Heaters"
-                            @bind-Value="selectedHeater"/>
+            <RadzenDropDown Disabled="PidService.pidIsCalibrating" AllowClear="true" TValue="string" Class="w-100"
+                            Data="@PidService.Heaters"
+                            @bind-Value="PidService.selectedHeater"/>
             <h4 class="mb-4">Set Temperature</h4>
-            <RadzenNumeric Disabled="pidIsCalibrating" TValue="int" @bind-Value="targetTemperature" Class="w-100"/>
+            <RadzenNumeric Disabled="PidService.pidIsCalibrating" TValue="int" @bind-Value="PidService.targetTemperature" Class="w-100"/>
             <h4 class="mb-4">Number of runs</h4>
-            <RadzenNumeric Disabled="pidIsCalibrating" TValue="int" @bind-Value="numberOfRuns" Class="w-100"/>
-            <button type="button" class="btn btn-success" disabled="@pidIsCalibrating" @onclick="StartPIDCalibration">Start PID Calibration</button>
+            <RadzenNumeric Disabled="PidService.pidIsCalibrating" TValue="int" @bind-Value="PidService.numberOfRuns" Class="w-100"/>
+            <button type="button" class="btn btn-success" disabled="@PidService.pidIsCalibrating" @onclick="async () => await PidService.StartPIDCalibration(PidService.numberOfRuns, PidService.selectedHeater, PidService.targetTemperature, Toast)">Start PID Calibration</button>
 
         </RadzenCard>
     </div>
 </div>
 
 <div class="row">
-    @foreach (var pid in PidList)
+    @foreach (var pid in PidService.PidList)
     {
         <div class="col-md-4 p-3">
             <RadzenCard class="">
@@ -44,114 +43,38 @@
 </div>
 
 <div class="row">
-    @if (CalibrationResult != null)
+    @if (PidService.CalibrationResult != null)
     {
         <div class="col-md-4 p-3">
             <h3 class="mb-4">
                 <strong>Final PID Calibration Result</strong>
             </h3>
             <RadzenCard>
-                <h4 class="mb-4">Ki: <strong>@CalibrationResult.Ki</strong></h4>
-                <h4 class="mb-4">Kp: <strong>@CalibrationResult.Kp</strong></h4>
-                <h4 class="mb-4">Kd: <strong>@CalibrationResult.Kd</strong></h4>
+                <h4 class="mb-4">Ki: <strong>@PidService.CalibrationResult.Ki</strong></h4>
+                <h4 class="mb-4">Kp: <strong>@PidService.CalibrationResult.Kp</strong></h4>
+                <h4 class="mb-4">Kd: <strong>@PidService.CalibrationResult.Kd</strong></h4>
 
                 <br/>
                 <h4>Click the "Upload" button to save the configuration or press the "Reset" button to reset the PID Calibrator Tool</h4>
                 <div class="btn-group text-center" role="group">
-                    <button type="button" class="btn btn-success" @onclick="UpdateConfig">Upload</button>
-                    <button type="button" class="btn btn-danger" @onclick="Reset">Reset</button>
+                    <button type="button" class="btn btn-success" @onclick="async () => await PidService.UpdateConfig(PidService.selectedHeater, Toast)">Upload</button>
+                    <button type="button" class="btn btn-danger" @onclick="PidService.Reset">Reset</button>
                 </div>
             </RadzenCard>
         </div>
     }
 </div>
 
-@code {
-
-    private List<string> Heaters { get; set; }
-    private string selectedHeater;
-    private int targetTemperature;
-    private int numberOfRuns;
-    private bool pidIsCalibrating;
-
-    public List<PID> PidList { get; set; } = new();
-    public PID CalibrationResult;
+@code
+{
 
     protected override async Task OnInitializedAsync()
     {
-        var queryList = await Api.GetObject<MoonrakerQueryResultObject>("heaters", false);
+        var queryList = await PidService.Api.GetObject<MoonrakerQueryResultObject>("heaters", false);
 
         if (queryList != null)
         {
-            Heaters = queryList.result.status.heaters.available_heaters;
+            PidService.Heaters = queryList.result.status.heaters.available_heaters;
         }
     }
-
-    private async Task StartPIDCalibration()
-    {
-        CalibrationResult = null;
-        pidIsCalibrating = true;
-        for (var i = 0; i < numberOfRuns; i++)
-        {
-            await Api.RunGCode($"PID_CALIBRATE HEATER={selectedHeater} TARGET={targetTemperature}");
-            var storedMessages = (await Api.GetGCodeStoredMessages("2")).result.gcode_store.Last();
-            PidList.Add(new PID(storedMessages.message));
-            await InvokeAsync(StateHasChanged);
-        }
-        CalculateMeanPID();
-    }
-
-    private void CalculateMeanPID()
-    {
-        float ki = 0;
-        float kp = 0;
-        float kd = 0;
-        foreach (var pid in PidList)
-        {
-            ki += pid.Ki;
-            kp += pid.Kp;
-            kd += pid.Kd;
-        }
-        ki /= numberOfRuns;
-        kp /= numberOfRuns;
-        kd /= numberOfRuns;
-
-        CalibrationResult = new PID
-        {
-            Ki = ki,
-            Kp = kp,
-            Kd = kd
-        };
-    }
-
-    private async Task UpdateConfig()
-    {
-        var configFile = Encoding.UTF8.GetString(await Api.GetFile("printer.cfg", "config"));
-        var splitConfigFile = configFile.Split("\n");
-
-        var index = Array.FindIndex(splitConfigFile, x => x.Contains($"#*# [{selectedHeater}]"));
-
-        splitConfigFile[index + 2] = $"#*# pid_kp = {CalibrationResult.Kp.ToString(CultureInfo.InvariantCulture)}\r";
-        splitConfigFile[index + 3] = $"#*# pid_ki = {CalibrationResult.Ki.ToString(CultureInfo.InvariantCulture)}\r";
-        splitConfigFile[index + 4] = $"#*# pid_kd = {CalibrationResult.Kd.ToString(CultureInfo.InvariantCulture)}\r";
-
-        var updatedConfigFile = splitConfigFile.Aggregate(string.Empty, (current, line) => current + (line + "\n"));
-
-        await UploadFiles(Encoding.UTF8.GetBytes(updatedConfigFile), "printer.cfg", "config");
-    }
-
-    private async Task UploadFiles(byte[] getBytes, string fileName, string root)
-    {
-        var result = await Api.UploadFile(getBytes, fileName, root);
-        ToastNotification.Notificate(Toast, result.Item1, $"PID Calibration Settings saved successfully!", $"Failed to Upload {fileName}, Error: {result.Item2}");
-        Reset();
-    }
-
-    private void Reset()
-    {
-        CalibrationResult = null;
-        PidList.Clear();
-        pidIsCalibrating = false;
-    }
-
 }
