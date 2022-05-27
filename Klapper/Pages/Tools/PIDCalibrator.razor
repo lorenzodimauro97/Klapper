@@ -2,7 +2,7 @@
 @using Klapper.Data
 @using Klapper.Classes
 @using System.Text
-@using System.Globalization
+@using Klapper.Shared.Components
 @inject NotificationService Toast
 @inject PIDCalibrationService PidService
 
@@ -20,38 +20,53 @@
             <RadzenNumeric Disabled="PidService.pidIsCalibrating" TValue="int" @bind-Value="PidService.targetTemperature" Class="w-100"/>
             <h4 class="mb-4">Number of runs</h4>
             <RadzenNumeric Disabled="PidService.pidIsCalibrating" TValue="int" @bind-Value="PidService.numberOfRuns" Class="w-100"/>
-            <button type="button" class="btn btn-success" disabled="@PidService.pidIsCalibrating" @onclick="async () => await PidService.StartPIDCalibration(PidService.numberOfRuns, PidService.selectedHeater, PidService.targetTemperature, Toast)">Start PID Calibration</button>
+            <button type="button" class="btn btn-success" disabled="@PidService.pidIsCalibrating" @onclick="StartPIDCalibration">Start PID Calibration</button>
 
         </RadzenCard>
     </div>
-</div>
-
-<div class="row">
-    @foreach (var pid in PidService.PidList)
+    @if (PidService.pidIsCalibrating)
     {
-        <div class="col-md-4 p-3">
-            <RadzenCard class="">
-                <h3 class="mb-4">
-                    <strong>PID Calibration Result</strong>
-                </h3>
-                <h4 class="mb-4">Ki: <strong>@pid.Ki</strong></h4>
-                <h4 class="mb-4">Kp: <strong>@pid.Kp</strong></h4>
-                <h4 class="mb-4">Kd: <strong>@pid.Kd</strong></h4>
+        <div class="col-md-6 col-lg-4 col-xl-3 p-3">
+            <RadzenCard>
+                <h4 class="mb-4">Completion Status</h4>
+                <div class="row pb-2 d-flex align-content-center justify-content-center">
+                    <CircularProgressBar ProgressValue="@(PidService.PidList.Count * 100 / PidService.numberOfRuns)"></CircularProgressBar>
+                </div>
+                <div class="row pb-2">
+                    <RadzenProgressBar Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"/>
+                </div>
+
             </RadzenCard>
         </div>
     }
 </div>
 
 <div class="row">
+    @foreach (var pid in PidService.PidList)
+    {
+        <div class="col-md-2 p-3 text-center">
+            <RadzenCard class="">
+                <h3 class="mb-4">
+                    <strong>PID Calibration Result</strong>
+                </h3>
+                <h4 class="mb-4">Kp: <strong>@pid.Kp</strong></h4>
+                <h4 class="mb-4">Ki: <strong>@pid.Ki</strong></h4>
+                <h4 class="mb-4">Kd: <strong>@pid.Kd</strong></h4>
+            </RadzenCard>
+        </div>
+    }
+</div>
+
+<div class="row text-center">
     @if (PidService.CalibrationResult != null)
     {
-        <div class="col-md-4 p-3">
+        <div class="col-md-2 p-3 text-center">
             <h3 class="mb-4">
                 <strong>Final PID Calibration Result</strong>
             </h3>
             <RadzenCard>
-                <h4 class="mb-4">Ki: <strong>@PidService.CalibrationResult.Ki</strong></h4>
                 <h4 class="mb-4">Kp: <strong>@PidService.CalibrationResult.Kp</strong></h4>
+                <h4 class="mb-4">Ki: <strong>@PidService.CalibrationResult.Ki</strong></h4>
                 <h4 class="mb-4">Kd: <strong>@PidService.CalibrationResult.Kd</strong></h4>
 
                 <br/>
@@ -76,5 +91,28 @@
         {
             PidService.Heaters = queryList.result.status.heaters.available_heaters;
         }
+    }
+
+    private async Task StartPIDCalibration()
+    {
+        PidService.CalibrationResult = null;
+        PidService.pidIsCalibrating = true;
+        for (var i = 0; i < PidService.numberOfRuns; i++)
+        {
+            var result = await PidService.Api.RunGCode($"PID_CALIBRATE HEATER={PidService.selectedHeater} TARGET={PidService.targetTemperature}");
+
+            if (!result.Item1)
+            {
+                ToastNotification.Notificate(Toast, false, badMessage: "Operation Timed out before completion! Please increase the NGINX request timeout for this Moonraker Instance!");
+                PidService.Reset();
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+
+            var storedMessages = (await PidService.Api.GetGCodeStoredMessages("2")).result.gcode_store.Last();
+            PidService.PidList.Add(new PID(storedMessages.message));
+            await InvokeAsync(StateHasChanged);
+        }
+        PidService.CalculateMeanPID(PidService.numberOfRuns);
     }
 }

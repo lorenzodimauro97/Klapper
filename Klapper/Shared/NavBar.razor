@@ -1,3 +1,7 @@
+@using Klapper.Data
+@using Klapper.Classes
+@inject MoonrakerApiService Api
+
 <nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4">
     <div class="container-fluid">
         <a class="navbar-brand" href="#">Klapper</a>
@@ -5,36 +9,50 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="@NavMenuCssClass" id="navbarCollapse">
-            <ul class="navbar-nav me-auto mb-2 mb-md-0">
-                <li class="nav-item active">
-                    <a class="nav-link" aria-current="page" href="" @onclick="ToggleNavMenu">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="SystemInfoPage" @onclick="ToggleNavMenu">System Info</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="PrinterConfiguration" @onclick="ToggleNavMenu">Printer Configuration</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="KlapperSettings" @onclick="ToggleNavMenu">Settings</a>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Tools
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="navbarScrollingDropdown">
-                        <li>
-                            <a class="dropdown-item" href="/Tools/BedScrewsAdjuster" @onclick="ToggleNavMenu">Bed Screws Adjuster</a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="/Tools/PIDCalibrator" @onclick="ToggleNavMenu">PID Calibrator</a>
-                        </li>
-                        <li>
-                            <hr class="dropdown-divider">
-                        </li>
-                    </ul>
-                </li>
-            </ul>
+            <div class="col">
+                <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                    <li class="nav-item active">
+                        <a class="nav-link" aria-current="page" href="" @onclick="ToggleNavMenu">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="SystemInfoPage" @onclick="ToggleNavMenu">System Info</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="PrinterConfiguration" @onclick="ToggleNavMenu">Printer Configuration</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="KlapperSettings" @onclick="ToggleNavMenu">Settings</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Tools
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarScrollingDropdown">
+                            <li>
+                                <a class="dropdown-item" href="/Tools/BedScrewsAdjuster" @onclick="ToggleNavMenu">Bed Screws Adjuster</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="/Tools/PIDCalibrator" @onclick="ToggleNavMenu">PID Calibrator</a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-auto">
+                <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                    <li class="nav-item active">
+                        <a class="nav-link" aria-current="page" href="" @onclick="() => Api.RunGCode(SpecialGCodeCommands.FirmwareRestart)"><span class="oi oi-reload" aria-hidden="true"></span> Firmware</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="SystemInfoPage" @onclick="() => Api.RunGCode(SpecialGCodeCommands.Restart)">
+                            <span class="oi oi-reload" aria-hidden="true"></span> Klipper
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 </nav>

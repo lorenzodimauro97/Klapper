@@ -17,6 +17,24 @@ public class PID
         
     }
 
+    public static string[] GetConfigText(string heater, PID pid)
+    {
+        var text = new[]
+        {
+            $"#*# [{heater}]\n", 
+            "#*# control = pid\n",
+            "#*# pid_kp = {pid.Kp.ToString(CultureInfo.InvariantCulture)}\n",
+            "#*# pid_ki = {pid.Ki.ToString(CultureInfo.InvariantCulture)}\n",
+            "#*# pid_kd = {pid.Kd.ToString(CultureInfo.InvariantCulture)}\n#*#"
+        };
+        return text;
+    }
+
+    /*public static string[] GetSaveConfigBaseFile()
+    {
+        return new[] { };
+    }*/
+
     public float Kp { get; set; }
     public float Ki { get; set; }
     public float Kd { get; set; }

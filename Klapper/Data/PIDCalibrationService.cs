@@ -25,28 +25,7 @@ public class PIDCalibrationService
     public int targetTemperature;
     public int numberOfRuns;
 
-    public async Task StartPIDCalibration(int numberOfRuns, string selectedHeater, int targetTemperature, NotificationService Toast)
-    {
-        CalibrationResult = null;
-        pidIsCalibrating = true;
-        for (var i = 0; i < numberOfRuns; i++)
-        {
-            var result = await Api.RunGCode($"PID_CALIBRATE HEATER={selectedHeater} TARGET={targetTemperature}");
-
-            if (!result.Item1)
-            {
-                ToastNotification.Notificate(Toast, false, badMessage:"Operation Timed out before completion! Please increase the NGINX request timeout for this Moonraker Instance!");
-                Reset();
-            }
-            
-            var storedMessages = (await Api.GetGCodeStoredMessages("2")).result.gcode_store.Last();
-            if (!storedMessages.message.Contains("=", StringComparison.InvariantCultureIgnoreCase))
-                PidList.Add(new PID(storedMessages.message));
-        }
-        CalculateMeanPID(numberOfRuns);
-    }
-
-    private void CalculateMeanPID(int numberOfRuns)
+    public void CalculateMeanPID(int numberOfRuns)
     {
         float ki = 0;
         float kp = 0;
@@ -71,6 +50,7 @@ public class PIDCalibrationService
 
     public async Task UpdateConfig(string selectedHeater, NotificationService Toast)
     {
+        await Api.RunGCode("SAVE_CONFIG");  //This guarantees there is at least one baseline for us to find inside the printer.cfg file to edit
         var configFile = Encoding.UTF8.GetString(await Api.GetFile("printer.cfg", "config"));
         var splitConfigFile = configFile.Split("\n");
 
