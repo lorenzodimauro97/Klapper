@@ -110,6 +110,12 @@ public class MoonrakerApiService
         var request = new RestRequest($"/server/files/metadata?filename={query}");
         return await LaunchGetRequest<GCodeFileDetailsRoot>(request, false);
     }
+    
+    public async Task<GCodeStoreRoot> GetGCodeStoredMessages(string query)
+    {
+        var request = new RestRequest($"/server/gcode_store?count={query}");
+        return await LaunchGetRequest<GCodeStoreRoot>(request, false);
+    }
 
     public async Task<T> GetObject<T>(string query, bool filter)
     {

@@ -82,6 +82,7 @@ public class PrinterStatusService
     {
         if(!KlippyIsReady) return;
         var objects = await _api.GetObject<MoonrakerQueryResultObject>("gcode_move&toolhead", false);
+        if (objects == null) return;
         GcodeMove = objects.result.status.gcode_move;
         Toolhead = objects.result.status.toolhead;
     }
