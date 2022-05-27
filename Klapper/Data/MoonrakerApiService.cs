@@ -26,6 +26,7 @@ public class MoonrakerApiService
             _client = new RestClient(new RestClientOptions
             {
                 BaseUrl = new Uri(BaseUrl),
+                MaxTimeout = 900000,
             });
         }
         catch (Exception ex)

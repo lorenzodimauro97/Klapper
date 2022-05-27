@@ -20,7 +20,7 @@ public class PrinterStatusService
     public GCodeFileDetails? PrintFileDetails { get; private set; }
     public GcodeMove? GcodeMove { get; set; }
     public Toolhead? Toolhead { get; set; }
-
+    
     public bool KlipperIsRunning => SystemInfo?.service_state.klipper.active_state == "active";
     public bool PrinterIsPrinting => PrinterStatus?.status.print_stats.state == "printing";
     public bool KlippyIsReady => PrinterStatus?.status.webhooks.state == "ready";
