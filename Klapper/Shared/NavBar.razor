@@ -42,16 +42,10 @@
                 </ul>
             </div>
             <div class="col-auto">
-                <ul class="navbar-nav me-auto mb-2 mb-md-0">
-                    <li class="nav-item active">
-                        <a class="nav-link" @onclick="() => Api.RunGCode(SpecialGCodeCommands.FirmwareRestart)"><span class="oi oi-reload" aria-hidden="true"></span> Firmware</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" @onclick="() => Api.RunGCode(SpecialGCodeCommands.Restart)">
+                <button class="btn btn-secondary" @onclick="async () => await Api.RunGCode(SpecialGCodeCommands.FirmwareRestart)"><span class="oi oi-reload" aria-hidden="true"></span> Firmware</button>
+                    <button class="btn btn-secondary" @onclick="async () => await Api.RunGCode(SpecialGCodeCommands.Restart)">
                             <span class="oi oi-reload" aria-hidden="true"></span> Klipper
-                        </a>
-                    </li>
-                </ul>
+                        </button>
             </div>
         </div>
     </div>
