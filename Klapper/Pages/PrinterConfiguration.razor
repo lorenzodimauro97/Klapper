@@ -17,7 +17,7 @@
     OnLaunchPrintDialog="async () => await ShowEditFileDialog()"
     OnDeleteFileDialog="async () => await DeleteFile()"
     RefreshData="async () => await RefreshData()"
-    OnUpload="async upload => await UploadFiles(upload)"/>
+    OnUpload="async upload => await UploadFiles(upload, false)"/>
 <div class="row">
     @if (Files?.Count > 0)
     {
@@ -129,7 +129,7 @@
 
         var result = await DialogService.OpenAsync("Edit File", ds =>
             @<FileEditor Content="@Encoding.UTF8.GetString(detailedFile)"
-                         OnSave="async file => { ds.Close(true); await UploadFiles(Encoding.UTF8.GetBytes(file), SelectedFile.path, root);}">
+                         OnSave="async (file, restart) => { ds.Close(true); await UploadFiles(Encoding.UTF8.GetBytes(file), SelectedFile.path, root, restart);}">
             </FileEditor>, new DialogOptions { Width = "50%", Height = "auto" });
     }
 
@@ -148,7 +148,7 @@
         }
     }
 
-    private async Task UploadFiles(InputFileChangeEventArgs e)
+    private async Task UploadFiles(InputFileChangeEventArgs e, bool restart)
     {
         var files = e.GetMultipleFiles();
 
@@ -166,7 +166,7 @@
 
             await ms.ReadAsync(buffer);
 
-            await UploadFiles(buffer, file.Name, "config");
+            await UploadFiles(buffer, file.Name, "config", restart);
         }
 
         await RefreshData();
@@ -174,10 +174,11 @@
         IsUploading = false;
     }
 
-    private async Task UploadFiles(byte[] getBytes, string fileName, string root)
+    private async Task UploadFiles(byte[] getBytes, string fileName, string root, bool restart)
     {
         var result = await Api.UploadFile(getBytes, fileName, root);
         ToastNotification.Notificate(Toast, result.Item1, $"{fileName} Uploaded", $"Failed to Upload {fileName}, Error: {result.Item2}");
+        if (restart) await Api.RunGCode(SpecialGCodeCommands.FirmwareRestart);
     }
 
 }
