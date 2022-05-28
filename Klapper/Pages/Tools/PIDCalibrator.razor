@@ -91,6 +91,8 @@
         {
             PidService.Heaters = queryList.result.status.heaters.available_heaters;
         }
+
+        await base.OnInitializedAsync();
     }
 
     private async Task StartPIDCalibration()
@@ -99,6 +101,7 @@
         PidService.pidIsCalibrating = true;
         for (var i = 0; i < PidService.numberOfRuns; i++)
         {
+            await InvokeAsync(StateHasChanged);
             var result = await PidService.Api.RunGCode($"PID_CALIBRATE HEATER={PidService.selectedHeater} TARGET={PidService.targetTemperature}");
 
             if (!result.Item1)
@@ -111,7 +114,7 @@
 
             var storedMessages = (await PidService.Api.GetGCodeStoredMessages("2")).result.gcode_store.Last();
             PidService.PidList.Add(new PID(storedMessages.message));
-            await InvokeAsync(StateHasChanged);
+            //await InvokeAsync(StateHasChanged);
         }
         PidService.CalculateMeanPID(PidService.numberOfRuns);
     }

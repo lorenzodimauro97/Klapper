@@ -103,7 +103,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        BedScrews = GetScrews(GetJsonElement(await Api.GetObject<JsonElement>("configfile", false), "result.status.configfile.settings.bed_screws"));
+        BedScrews = GetScrews(JsonOperations.GetJsonElement(await Api.GetObject<JsonElement>("configfile", false), "result.status.configfile.settings.bed_screws"));
 
         if (BedScrews == null || BedScrews.Count == 0)
             ToastNotification.Notificate(Toast, false, badMessage: "bed_screws section is missing in printer config! Visual Helper will not be enabled.");
@@ -129,32 +129,6 @@
         }
         return screws.OrderBy(x => x.Name).ToList();
     }
-
-    private static JsonElement GetJsonElement(JsonElement jsonElement, string path)
-    {
-        if (jsonElement.ValueKind == JsonValueKind.Null ||
-            jsonElement.ValueKind == JsonValueKind.Undefined)
-        {
-            return default;
-        }
-
-        var segments =
-            path.Split(new[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
-
-        foreach (var t in segments)
-        {
-            jsonElement = jsonElement.TryGetProperty(t, out JsonElement value) ? value : default;
-
-            if (jsonElement.ValueKind == JsonValueKind.Null ||
-                jsonElement.ValueKind == JsonValueKind.Undefined)
-            {
-                return default;
-            }
-        }
-
-        return jsonElement;
-    }
-
     private async Task StartScrewAdjustment()
     {
         printerIsOperating = true;
