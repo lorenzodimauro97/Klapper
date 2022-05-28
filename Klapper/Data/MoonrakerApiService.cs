@@ -97,6 +97,12 @@ public class MoonrakerApiService
         return await LaunchGetRequest<GCodeFileRoot>(request, false);
     }
 
+    public async Task<JsonElement> GetTemperatureHistory()
+    {
+        var request = new RestRequest($"/server/temperature_store");
+        return await LaunchGetRequest<JsonElement>(request, false);
+    }
+    
     public async Task<byte[]> GetFile(string query, string root)
     {
         var request = new RestRequest($"/server/files/{root}/{query}");

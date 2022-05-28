@@ -21,6 +21,13 @@ public class HeatableSensible
     }
 }
 
+public class HeatableSensibleTemperatureHistory
+{
+    public List<double> temperatures { get; set; }
+    public List<double> targets { get; set; }
+    public List<double> powers { get; set; }
+}
+
 public class Temperature
 {
     public Temperature(HeatableSensible heatableSensible)
