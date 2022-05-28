@@ -5,6 +5,7 @@ public static class SpecialGCodeCommands
     public static string ClearSDCard => "SDCARD_RESET_FILE";
     public static string Restart => "RESTART";
     public static string FirmwareRestart => "FIRMWARE_RESTART";
+    public static string Home => "G28";
 }
 
 public class GcodeStore

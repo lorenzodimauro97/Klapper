@@ -1,4 +1,5 @@
 @using Klapper.Data
+@using Klapper.Classes
 @inject MoonrakerApiService Api;
 @inject NotificationService Toast;
 @inject PrinterStatusService StatusService;
@@ -21,7 +22,7 @@
             <div class="card-footer text-center">
                 <RadzenSlider @bind-Value="@MovementLength" Step="0.1" TValue="float" Min="0" Max="500" class="w-50"/>
                 @MovementLength mm
-                <RadzenSlider @bind-Value="@MovementFeedRate" Step="10" TValue="float" Min="0" Max="1000" class="w-50"/>
+                <RadzenSlider @bind-Value="@MovementFeedRate" Step="10" TValue="float" Min="0" Max="8000" class="w-50"/>
                 @MovementFeedRate mm/min
             </div>
             <div class="card-body text-center">
@@ -38,7 +39,7 @@
             <div class="card-footer text-center">
                 <RadzenSlider @bind-Value="@ExtrusionDistance" Step="0.1" TValue="float" Min="0" Max="@MaxExtrusion" class="w-50"/>
                 @ExtrusionDistance mm
-                <RadzenSlider @bind-Value="@ExtrusionFeedRate" Step="10" TValue="float" Min="0" Max="1000" class="w-50"/>
+                <RadzenSlider @bind-Value="@ExtrusionFeedRate" Step="10" TValue="float" Min="0" Max="8000" class="w-50"/>
                 @ExtrusionFeedRate mm/min
             </div>
 
@@ -46,33 +47,52 @@
     </div>
     <div class="col-md-3 text-center pb-2 justify-content-between">
 
-        <div class="row-md-3">
-            <div class="btn-group-vertical d-inline-block me-1 ms-1 text-center" role="group">
-
-                <button type="button" class="btn btn-secondary" @onclick="() => Move(0, 1)">+</button>
-                <h2>X</h2>
-                <button type="button" class="btn btn-secondary" @onclick="() => Move(0, 0)">-</button>
+        <div class="row justify-content-between">
+            <div class="col-md-1 col-sm-1 align-self-center pb-2">
+                <div class="btn-group-vertical d-inline-block me-1 ms-1 text-center" role="group">
+                    <button disabled="@isMoving" type="button" class="btn btn-secondary" @onclick="() => Move(0, 1)">+</button>
+                    <button disabled="@isMoving" type="button" class="btn btn-secondary" @onclick="() => Home(0)">
+                        <span class="oi oi-home" aria-hidden="true"></span>X
+                    </button>
+                    <button disabled="@isMoving" type="button" class="btn btn-secondary" @onclick="() => Move(0, 0)">-</button>
+                </div>
             </div>
-            <div class="btn-group-vertical d-inline-block me-1 ms-1 text-center" role="group">
-
-                <button type="button" class="btn btn-secondary" @onclick="() => Move(1, 1)">+</button>
-                <h2>Y</h2>
-                <button type="button" class="btn btn-secondary" @onclick="() => Move(1, 0)">-</button>
+            <div class="col-md-1 col-sm-1 align-self-center pb-2">
+                <div class="btn-group-vertical d-inline-block me-1 ms-1 text-center" role="group">
+                    <button disabled="@isMoving" type="button" class="btn btn-secondary" @onclick="() => Move(1, 1)">+</button>
+                    <button disabled="@isMoving" type="button" class="btn btn-secondary" @onclick="() => Home(1)">
+                        <span class="oi oi-home" aria-hidden="true"></span>Y
+                    </button>
+                    <button disabled="@isMoving" type="button" class="btn btn-secondary" @onclick="() => Move(1, 0)">-</button>
+                </div>
             </div>
-            <button type="button" class="btn btn-secondary" @onclick="Home">
-                <span class="oi oi-home" aria-hidden="true"></span>
-            </button>
-            <div class="btn-group-vertical d-inline-block me-1 ms-1 text-center" role="group">
 
-                <button type="button" class="btn btn-secondary" @onclick="() => Move(2, 1)">+</button>
-                <h2>Z</h2>
-                <button type="button" class="btn btn-secondary" @onclick="() => Move(2, 0)">-</button>
+            <div class="col-md-1 col-sm-1 align-self-center pb-2">
+
+                <button disabled="@isMoving" type="button" class="btn btn-secondary" @onclick="() => Home(3)">
+                    <span class="oi oi-home" aria-hidden="true"></span>
+                </button>
             </div>
+
+            <div class="col-md-1 col-sm-1 align-self-center pb-2">
+
+                <div class="btn-group-vertical d-inline-block me-1 ms-1 text-center" role="group">
+
+                    <button disabled="@isMoving" type="button" class="btn btn-secondary" @onclick="() => Move(2, 1)">+</button>
+                    <button disabled="@isMoving" type="button" class="btn btn-secondary" @onclick="() => Home(2)">
+                        <span class="oi oi-home" aria-hidden="true"></span>Z
+                    </button>
+                    <button disabled="@isMoving" type="button" class="btn btn-secondary" @onclick="() => Move(2, 0)">-</button>
+                </div>
+            </div>
+
+            <div class="col-md-1 col-sm-1 align-self-center pb-2">
             <div class="btn-group-vertical d-inline-block me-1 ms-1 text-center" role="group">
                 <button type="button" class="btn btn-secondary" @onclick="() => Move(3, 1)">+</button>
                 <h2>E</h2>
                 <button type="button" class="btn btn-secondary" @onclick="() => Move(3, 0)">-</button>
             </div>
+                </div>
         </div>
         <div class="row-md-3 text-center justify-content-between">
             @if (StatusService.Toolhead != null)
@@ -93,9 +113,9 @@
             <div class="card-body text-center justify-content-between">
                 <h2 class="card-title text-center">Flow</h2>
                 <div class="row text-center">
-                       <div class="d-flex flex-row justify-content-center align-items-center">
+                    <div class="d-flex flex-row justify-content-center align-items-center">
                         <h3 style="padding-right: 10px">@Flow%</h3>
-                    <button type="button" class="btn btn-secondary" @onclick="() => ChangeFlow(true)">
+                        <button type="button" class="btn btn-secondary" @onclick="() => ChangeFlow(true)">
                             <span class="oi oi-reload" aria-hidden="true"></span>
                         </button>
                     </div>
@@ -107,7 +127,7 @@
             <div class="card-body text-center justify-content-between">
                 <h2 class="card-title text-center">Speed</h2>
                 <div class="row text-center">
-                       <div class="d-flex flex-row justify-content-center align-items-center">
+                    <div class="d-flex flex-row justify-content-center align-items-center">
                         <h3 style="padding-right: 10px">@Speed%</h3>
                         <button type="button" class="btn btn-secondary" @onclick="() => ChangeSpeed(true)">
                             <span class="oi oi-reload" aria-hidden="true"></span>
@@ -131,6 +151,8 @@
     private float ExtrusionFeedRate { get; set; } = 300;
     private float MovementLength { get; set; } = 10;
     private float MovementFeedRate { get; set; } = 300;
+    
+    public bool isMoving { get; set; }
 
     private int? Flow
     {
@@ -177,13 +199,30 @@
             await Api.RunGCode($"M220 S{Speed}");
     }
 
-    private async Task Home()
+    private async Task Home(int i)
     {
-        await Api.RunGCode("G28");
+        isMoving = true;
+        var command = SpecialGCodeCommands.Home;
+
+        switch (i)
+        {
+            case 0:
+                command += " X";
+                break;
+            case 1:
+                command += " Y";
+                break;
+            case 2:
+                command += " Z";
+                break;
+        }
+        await Api.RunGCode(command);
+        isMoving = false;
     }
 
     private async Task Move(int axis, int direction)
     {
+        isMoving = true;
         if (MovementLength == 0) return;
 
         var command = "G1 ";
@@ -213,7 +252,7 @@
                 break;
         }
 
-        if(axis == 3)command += $"F{ExtrusionFeedRate}";
+        if (axis == 3) command += $"F{ExtrusionFeedRate}";
         else command += $"F{MovementFeedRate}";
 
         await Api.RunGCode("G91");
@@ -224,6 +263,7 @@
 
         if (!result.Item1)
             ToastNotification.Notificate(Toast, result.Item1, badMessage: result.Item2);
+        isMoving = false;
     }
 }
 
