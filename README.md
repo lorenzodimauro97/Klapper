@@ -1,9 +1,8 @@
 # Klapper
 Klapper is a free, open-source and not Vue-based Klipper web interface for managing your 3d printer.
 
-![image](https://user-images.githubusercontent.com/50343905/168448853-52b39bcb-264e-4da1-8457-631693d31e78.png)
-![image](https://user-images.githubusercontent.com/50343905/169483045-e6efe1ab-a683-41ac-812c-2764ce1acdac.png)
-
+![image](https://user-images.githubusercontent.com/50343905/171060476-e37e6aa3-63d9-4e49-8827-7e841151c198.png)
+![image](https://user-images.githubusercontent.com/50343905/171060413-db533520-a468-445d-817e-c50ba18ded1d.png)
 # Why
 Because I don't know Vue and I really don't want to learn it. This is also a great opportunity to learn a bit more on how to develop a web application of this relatively small magnitude, and a great opportunity to learn Blazor, too!
 
@@ -20,6 +19,16 @@ The idea is to implement everything Fluidd and Moonraker has, plus:
 - 3D GCode viewer with realtime nozzle position
 - Probably something else I'm missing
 
+# NGINX Configuration
+
+Some of Klapper's functionality requires a long-polling HTTP request to execute (eg: PID Calibration Tiil) so for it to run properly, it is imperative that nginx request timeout be set to a much more suitable number than 60 seconds, otherwise some Tools may not properly work!
+
+This is how I expect your /etc/nginx/nginx.conf to be:
+
+![image](https://user-images.githubusercontent.com/50343905/170728932-35a710a7-bf5b-4db7-82ea-51790bd99d16.png)
+
+to ensure no timeout can occur, it is highly suggested to use a timeout of at least 15 minutes (image shows 5 minutes timeout).
+
 # How to run?
 The ASP.NET Core Based Application is self-contained and does not require any further Runtime or SDK installation to do it's job.
 
@@ -29,12 +38,6 @@ It is possible to generate a certificate using the command "dotnet dev-certs htt
 
 If you just don't care about running with HTTPS, you may remove the Https endpoint from the appsettings.json file, so it looks like this:
 ![image](https://user-images.githubusercontent.com/50343905/168447046-20bd6fe4-963e-4bbc-bd8e-487c9de710b4.png)
-
-WARNING: For Klapper to run properly, it is imperative that nginx request timeout be set to a much more suitable number than 60 seconds, otherwise some Tools may not properly work!
-
-This is how I expect your /etc/nginx/nginx.conf to be:
-
-![image](https://user-images.githubusercontent.com/50343905/170728932-35a710a7-bf5b-4db7-82ea-51790bd99d16.png)
 
 On Windows, simply run Klapper.exe and let the Kestrel server do the magic!
 
