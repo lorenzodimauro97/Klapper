@@ -45,6 +45,7 @@ public class PrinterStatusService
         await GetKlipperSystemInfo();
         await GetKlipperPrinterStatus();
         await GetPrintFileDetails();
+        if(!PrinterIsPrinting)
         await GetGcodeMoveToolHead();
     }
 
@@ -81,7 +82,7 @@ public class PrinterStatusService
         }
     }
 
-    private async Task GetGcodeMoveToolHead()
+    public async Task GetGcodeMoveToolHead()
     {
         if(!KlippyIsReady) return;
         var objects = await _api.GetObject<MoonrakerQueryResultObject>("gcode_move&toolhead", false);

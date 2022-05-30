@@ -26,7 +26,7 @@
                             <div class="col-md-2 me-2">
                                 <CircularProgressBar ProgressValue="@progress"></CircularProgressBar>
                             </div>
-                            @if (StatusService.PrintFileDetails != null)
+                            @if (StatusService.PrintFileDetails != null && StatusService.GcodeMove != null && StatusService.Toolhead != null)
                             {
                                 <div class="col-md-6 mt-4">
                                     <h2>@StatusService.PrintFileDetails.filename</h2>
@@ -122,9 +122,10 @@
 
     private void SetUIRefreshTimer()
     {
-        var timer = new Timer(2000);
+        var timer = new Timer(500);
         timer.Elapsed += async (_, _) =>
         {
+            await StatusService.GetGcodeMoveToolHead();
             await InvokeAsync(StateHasChanged);
             timer.Start();
         };
