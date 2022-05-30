@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace Klapper.Classes;
 
 public class GCodeFile
@@ -15,6 +17,8 @@ public class GCodeFileRoot
 
 public class GCodeFileDetails
 {
+    public Extruder Extruder { get; set; }
+    
     public int size { get; set; }
     public double modified { get; set; }
     public string slicer { get; set; }
@@ -51,6 +55,11 @@ public class GCodeFileDetails
     public double GetLayer(double z)
     {
         return Math.Ceiling((z - first_layer_height) / layer_height + 1);
+    }
+
+    public double GetFlow(double speed) //SEVERE WARNING: I understand none of this shit, this is ripped of the internet. If you know a better solution, make a goddamn pull request!
+    {
+        return speed * Extruder.nozzle_diameter * layer_height;
     }
 }
 

@@ -322,19 +322,6 @@ public class BedScrews
     public string screw3_name { get; set; }
 }
 
-public class DisplayStatus
-{
-    public double progress { get; set; }
-    public object message { get; set; }
-}
-
-public class GcodeMacroCANCELPRINT
-{
-    public string rename_existing { get; set; }
-    public string description { get; set; }
-    public string gcode { get; set; }
-}
-
 public class Tmc2209StepperY1
 {
     public string uart_pin { get; set; }
@@ -366,95 +353,40 @@ public class Tmc2209StepperY1
 public class Extruder
 {
     public string control { get; set; }
-    public string pid_kp { get; set; }
-    public string pressure_advance { get; set; }
-    public string sensor_pin { get; set; }
-    public string nozzle_diameter { get; set; }
-    public string max_extrude_cross_section { get; set; }
-    public object full_steps_per_rotation { get; set; }
-    public string rotation_distance { get; set; }
-    public string gear_ratio { get; set; }
-    public string max_extrude_only_distance { get; set; }
-    public string sensor_type { get; set; }
-    public string step_pin { get; set; }
-    public string min_temp { get; set; }
-    public string pid_kd { get; set; }
-    public string microsteps { get; set; }
-    public string pid_ki { get; set; }
-    public string filament_diameter { get; set; }
-    public string dir_pin { get; set; }
-    public string max_temp { get; set; }
-    public string heater_pin { get; set; }
-    public string enable_pin { get; set; }
     public double pullup_resistor { get; set; }
     public double max_extrude_only_velocity { get; set; }
+    public List<List<double>> gear_ratio { get; set; }
+    public double max_extrude_only_distance { get; set; }
+    public string sensor_type { get; set; }
+    public double min_temp { get; set; }
+    public string enable_pin { get; set; }
+    public double pressure_advance { get; set; }
+    public double max_extrude_cross_section { get; set; }
     public double pwm_cycle_time { get; set; }
+    public string dir_pin { get; set; }
+    public double pid_kp { get; set; }
     public double instantaneous_corner_velocity { get; set; }
+    public int full_steps_per_rotation { get; set; }
+    public string heater_pin { get; set; }
     public double pressure_advance_smooth_time { get; set; }
     public double smooth_time { get; set; }
+    public double pid_ki { get; set; }
+    public double filament_diameter { get; set; }
+    public string sensor_pin { get; set; }
+    public double nozzle_diameter { get; set; }
+    public double pid_kd { get; set; }
+    public double rotation_distance { get; set; }
+    public string step_pin { get; set; }
     public double inline_resistor { get; set; }
     public double max_power { get; set; }
+    public int microsteps { get; set; }
+    public double max_temp { get; set; }
     public double max_extrude_only_accel { get; set; }
     public double min_extrude_temp { get; set; }
-    public double target { get; set; }
-    public double power { get; set; }
-    public bool can_extrude { get; set; }
-    public double temperature { get; set; }
 }
-
-public class Config
-{
-    [DataMember(Name = "tmc2209 extruder")]
-    public Tmc2209Extruder Tmc2209Extruder { get; set; }
-
-    public PauseResume pause_resume { get; set; }
-    public StepperY1 stepper_y1 { get; set; }
-    public HeaterBed heater_bed { get; set; }
-    public VirtualSdcard virtual_sdcard { get; set; }
-    public StepperZ stepper_z { get; set; }
-    public StepperY stepper_y { get; set; }
-    public StepperX stepper_x { get; set; }
-    public InputShaper input_shaper { get; set; }
-    public HomingOverride homing_override { get; set; }
-    public Mcu mcu { get; set; }
-    public Printer printer { get; set; }
-
-    [DataMember(Name = "temperature_sensor mcu_temp")]
-    public TemperatureSensorMcuTemp TemperatureSensorMcuTemp { get; set; }
-
-    public Fan fan { get; set; }
-
-    [DataMember(Name = "tmc2209 stepper_z")]
-    public Tmc2209StepperZ Tmc2209StepperZ { get; set; }
-
-    [DataMember(Name = "tmc2209 stepper_x")]
-    public Tmc2209StepperX Tmc2209StepperX { get; set; }
-
-    [DataMember(Name = "tmc2209 stepper_y")]
-    public Tmc2209StepperY Tmc2209StepperY { get; set; }
-
-    public BedScrews bed_screws { get; set; }
-    public DisplayStatus display_status { get; set; }
-
-    [DataMember(Name = "gcode_macro CANCEL_PRINT")]
-    public GcodeMacroCANCELPRINT GcodeMacroCANCELPRINT { get; set; }
-
-    [DataMember(Name = "tmc2209 stepper_y1")]
-    public Tmc2209StepperY1 Tmc2209StepperY1 { get; set; }
-
-    public Extruder extruder { get; set; }
-}
-
 public class ForceMove
 {
     public bool enable_force_move { get; set; }
-}
-
-public class GcodeMacroCancelPrint2
-{
-    public string rename_existing { get; set; }
-    public string description { get; set; }
-    public string gcode { get; set; }
 }
 
 public class VerifyHeaterExtruder
@@ -530,23 +462,6 @@ public class Settings
     public Tmc2209StepperY1 Tmc2209StepperY1 { get; set; }
 
     public Extruder extruder { get; set; }
-}
-
-public class Configfile
-{
-    public List<object> warnings { get; set; }
-    public Config config { get; set; }
-    public Settings settings { get; set; }
-    public bool save_config_pending { get; set; }
-}
-
-public class LastQuery
-{
-}
-
-public class QueryEndstops
-{
-    public LastQuery last_query { get; set; }
 }
 
 public class Webhooks
@@ -634,6 +549,7 @@ public class Heaters
     public List<string> available_heaters { get; set; }
 }
 
+/*
 public class MotionReport
 {
     public List<double> live_position { get; set; }
@@ -642,13 +558,16 @@ public class MotionReport
     public double live_extruder_velocity { get; set; }
     public List<string> trapq { get; set; }
 }
+*/
 
+/*
 public class SystemStats
 {
     public double sysload { get; set; }
     public int memavail { get; set; }
     public double cputime { get; set; }
 }
+*/
 
 public class PrintStats
 {
@@ -690,23 +609,11 @@ public class QueryResultStatus
 {
     [DataMember(Name = "tmc2209 extruder")]
     public Tmc2209Extruder Tmc2209Extruder { get; set; }
-
-    public PauseResume pause_resume { get; set; }
-    public Configfile configfile { get; set; }
-    public QueryEndstops query_endstops { get; set; }
-    public Webhooks webhooks { get; set; }
-    public VirtualSdcard virtual_sdcard { get; set; }
-    public HeaterBed heater_bed { get; set; }
     public GcodeMove gcode_move { get; set; }
-    public Mcu mcu { get; set; }
     public Heaters heaters { get; set; }
 
     [DataMember(Name = "temperature_sensor mcu_temp")]
     public TemperatureSensorMcuTemp TemperatureSensorMcuTemp { get; set; }
-
-    public MotionReport motion_report { get; set; }
-    public SystemStats system_stats { get; set; }
-    public IdleTimeout idle_timeout { get; set; }
     public Fan fan { get; set; }
 
     [DataMember(Name = "tmc2209 stepper_z")]
@@ -717,13 +624,6 @@ public class QueryResultStatus
 
     [DataMember(Name = "tmc2209 stepper_y")]
     public Tmc2209StepperY Tmc2209StepperY { get; set; }
-
-    public DisplayStatus display_status { get; set; }
-
-    [DataMember(Name = "gcode_macro CANCEL_PRINT")]
-    public GcodeMacroCANCELPRINT GcodeMacroCANCELPRINT { get; set; }
-
-    public PrintStats print_stats { get; set; }
     public Toolhead toolhead { get; set; }
 
     [DataMember(Name = "tmc2209 stepper_y1")]
@@ -735,7 +635,6 @@ public class QueryResultStatus
 public class MoonrakerQueryResult
 {
     public QueryResultStatus status { get; set; }
-    public double eventtime { get; set; }
 }
 
 public class MoonrakerQueryResultObject

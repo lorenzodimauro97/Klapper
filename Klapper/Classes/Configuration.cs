@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using Newtonsoft.Json;
 
 namespace Klapper.Classes;
 
@@ -95,3 +96,59 @@ public class ConfigurationRow
         return $"{Description}{Separator}{updatedValue}";
     }
 }
+
+    public class Config
+    {
+        [JsonProperty("tmc2209 extruder")]
+        public Tmc2209Extruder Tmc2209Extruder { get; set; }
+        public PauseResume pause_resume { get; set; }
+        public StepperY1 stepper_y1 { get; set; }
+        public HeaterBed heater_bed { get; set; }
+        public VirtualSdcard virtual_sdcard { get; set; }
+        public StepperZ stepper_z { get; set; }
+        public StepperY stepper_y { get; set; }
+        public StepperX stepper_x { get; set; }
+        public InputShaper input_shaper { get; set; }
+        public Mcu mcu { get; set; }
+        public Printer printer { get; set; }
+
+        [JsonProperty("temperature_sensor mcu_temp")]
+        public TemperatureSensorMcuTemp TemperatureSensorMcuTemp { get; set; }
+        public Fan fan { get; set; }
+
+        [JsonProperty("tmc2209 stepper_z")]
+        public Tmc2209StepperZ Tmc2209StepperZ { get; set; }
+
+        [JsonProperty("tmc2209 stepper_x")]
+        public Tmc2209StepperX Tmc2209StepperX { get; set; }
+
+        [JsonProperty("tmc2209 stepper_y")]
+        public Tmc2209StepperY Tmc2209StepperY { get; set; }
+        public BedScrews bed_screws { get; set; }
+
+        [JsonProperty("tmc2209 stepper_y1")]
+        public Tmc2209StepperY1 Tmc2209StepperY1 { get; set; }
+        public Extruder extruder { get; set; }
+    }
+
+    public class Configfile
+    {
+        public List<object> warnings { get; set; }
+        public Config config { get; set; }
+        public Settings settings { get; set; }
+        public bool save_config_pending { get; set; }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

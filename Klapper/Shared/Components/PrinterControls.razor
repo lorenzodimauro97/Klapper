@@ -50,26 +50,26 @@
         <div class="row justify-content-between">
             <div class="col-md-1 col-sm-1 align-self-center pb-2">
                 <div class="btn-group-vertical d-inline-block me-1 ms-1 text-center" role="group">
-                    <button disabled="@isMoving" type="button" class="btn btn-secondary" @onclick="() => Move(0, 1)">+</button>
-                    <button disabled="@isMoving" type="button" class="btn btn-secondary" @onclick="() => Home(0)">
+                    <button disabled="@IsMoving" type="button" class="btn btn-secondary" @onclick="() => Move(0, 1)">+</button>
+                    <button disabled="@IsMoving" type="button" class="btn btn-secondary" @onclick="() => Home(0)">
                         <span class="oi oi-home" aria-hidden="true"></span>X
                     </button>
-                    <button disabled="@isMoving" type="button" class="btn btn-secondary" @onclick="() => Move(0, 0)">-</button>
+                    <button disabled="@IsMoving" type="button" class="btn btn-secondary" @onclick="() => Move(0, 0)">-</button>
                 </div>
             </div>
             <div class="col-md-1 col-sm-1 align-self-center pb-2">
                 <div class="btn-group-vertical d-inline-block me-1 ms-1 text-center" role="group">
-                    <button disabled="@isMoving" type="button" class="btn btn-secondary" @onclick="() => Move(1, 1)">+</button>
-                    <button disabled="@isMoving" type="button" class="btn btn-secondary" @onclick="() => Home(1)">
+                    <button disabled="@IsMoving" type="button" class="btn btn-secondary" @onclick="() => Move(1, 1)">+</button>
+                    <button disabled="@IsMoving" type="button" class="btn btn-secondary" @onclick="() => Home(1)">
                         <span class="oi oi-home" aria-hidden="true"></span>Y
                     </button>
-                    <button disabled="@isMoving" type="button" class="btn btn-secondary" @onclick="() => Move(1, 0)">-</button>
+                    <button disabled="@IsMoving" type="button" class="btn btn-secondary" @onclick="() => Move(1, 0)">-</button>
                 </div>
             </div>
 
             <div class="col-md-1 col-sm-1 align-self-center pb-2">
 
-                <button disabled="@isMoving" type="button" class="btn btn-secondary" @onclick="() => Home(3)">
+                <button disabled="@IsMoving" type="button" class="btn btn-secondary" @onclick="() => Home(3)">
                     <span class="oi oi-home" aria-hidden="true"></span>
                 </button>
             </div>
@@ -78,11 +78,11 @@
 
                 <div class="btn-group-vertical d-inline-block me-1 ms-1 text-center" role="group">
 
-                    <button disabled="@isMoving" type="button" class="btn btn-secondary" @onclick="() => Move(2, 1)">+</button>
-                    <button disabled="@isMoving" type="button" class="btn btn-secondary" @onclick="() => Home(2)">
+                    <button disabled="@IsMoving" type="button" class="btn btn-secondary" @onclick="() => Move(2, 1)">+</button>
+                    <button disabled="@IsMoving" type="button" class="btn btn-secondary" @onclick="() => Home(2)">
                         <span class="oi oi-home" aria-hidden="true"></span>Z
                     </button>
-                    <button disabled="@isMoving" type="button" class="btn btn-secondary" @onclick="() => Move(2, 0)">-</button>
+                    <button disabled="@IsMoving" type="button" class="btn btn-secondary" @onclick="() => Move(2, 0)">-</button>
                 </div>
             </div>
 
@@ -105,6 +105,10 @@
                     Z: <strong>@StatusService.Toolhead.position[2]</strong>
                 </div>
             }
+        </div>
+        <div class="row-md-3 d-flex flex-row text-center justify-content-between">
+            <Endstops></Endstops>
+            <Fans></Fans>
         </div>
 
     </div>
@@ -151,8 +155,8 @@
     private float ExtrusionFeedRate { get; set; } = 300;
     private float MovementLength { get; set; } = 10;
     private float MovementFeedRate { get; set; } = 300;
-    
-    public bool isMoving { get; set; }
+
+    private bool IsMoving { get; set; }
 
     private int? Flow
     {
@@ -201,7 +205,7 @@
 
     private async Task Home(int i)
     {
-        isMoving = true;
+        IsMoving = true;
         var command = SpecialGCodeCommands.Home;
 
         switch (i)
@@ -217,12 +221,12 @@
                 break;
         }
         await Api.RunGCode(command);
-        isMoving = false;
+        IsMoving = false;
     }
 
     private async Task Move(int axis, int direction)
     {
-        isMoving = true;
+        IsMoving = true;
         if (MovementLength == 0) return;
 
         var command = "G1 ";
@@ -263,7 +267,7 @@
 
         if (!result.Item1)
             ToastNotification.Notificate(Toast, result.Item1, badMessage: result.Item2);
-        isMoving = false;
+        IsMoving = false;
     }
 }
 

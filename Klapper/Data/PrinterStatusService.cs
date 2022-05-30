@@ -1,4 +1,6 @@
+using System.Text.Json;
 using Klapper.Classes;
+using JsonSerializer = SpanJson.JsonSerializer;
 using Timer = System.Timers.Timer;
 
 namespace Klapper.Data;
@@ -73,6 +75,9 @@ public class PrinterStatusService
                 PrintFileDetails.Base64Image =
                     Convert.ToBase64String(await _api.GetFile(PrintFileDetails.thumbnails.Last().relative_path,
                         "gcodes"));
+            
+            var extruder = JsonOperations.GetJsonElement(await _api.GetObject<JsonElement>("configfile", false), "result.status.configfile.settings.extruder");
+            PrintFileDetails.Extruder = JsonSerializer.Generic.Utf16.Deserialize<Extruder>(extruder.ToString());
         }
     }
 

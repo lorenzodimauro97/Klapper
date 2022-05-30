@@ -6,24 +6,22 @@
 @if (data != null)
 {
     <div class="product-card">
-        <div class="card" style="width: 18rem;">
-            <div class="card-body">
-                <h5 class="card-title">@Name</h5>
-                <p class="card-text">Temperature: @data.temperature °C</p>
+        <div class="card">
+            <div class="card-body d-flex flex-row">
+                <div class="p-2">@Name</div>
+                <div class="vr"></div>
+                <div class="p-2">@data.temperature °C</div>
+
                 @if (data.IsHeater)
                 {
-                    <p class="card-text">Power: @data.GetPowerPercent().ToString(@"n2")%</p>
+                    <div class="vr"></div>
+                    <div class="p-2">@data.GetPowerPercent().ToString(@"n2")%</div>
+                    <div class="vr"></div>
+                    <div class="p-2">
+                        <RadzenNumeric @bind-value="@data.target" TValue="double" Min="0" Max="999" Change=@(OnPowerChange) Style="width: 100px"></RadzenNumeric>
+                    </div>
                 }
             </div>
-            @if (data.IsHeater)
-            {
-                <div class="card-body">
-                    <p class="card-text">
-                        Target Temperature:
-                        <RadzenNumeric @bind-value="@data.target" TValue="double" Min="0" Max="999" Change=@(OnPowerChange) Class="w-100"/>
-                    </p>
-                </div>
-            }
         </div>
     </div>
 }
@@ -49,7 +47,7 @@
         {
             await RefreshData();
             await InvokeAsync(StateHasChanged);
-			timer.Start();
+            timer.Start();
         };
         timer.AutoReset = false;
         timer.Enabled = true;

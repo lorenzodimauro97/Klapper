@@ -47,14 +47,13 @@
                                     <div>
                                         <h6>
                                             Flow Rate:
-                                            <strong></strong> Out of
-                                            <strong></strong> (estimated)
+                                            <strong>@StatusService.PrintFileDetails.GetFlow((double)(StatusService.GcodeMove?.speed * StatusService.GcodeMove?.speed_factor / 60)).ToString("n3")</strong> mm&#179;/s (estimated)
                                         </h6>
                                     </div>
                                     <div>
                                         <h6>
                                             Speed:
-                                            <strong>@(StatusService.GcodeMove?.speed * StatusService.GcodeMove?.speed_factor / 60)</strong> mm/s
+                                            <strong>@((StatusService.GcodeMove?.speed * StatusService.GcodeMove?.speed_factor / 60).Value.ToString("n3"))</strong> mm/s
                                         </h6>
                                     </div>
                                 </div>
@@ -91,12 +90,6 @@
                     </div>
                 </div>
             }
-        </div>
-        <div class="col-auto pb-2">
-            <Endstops></Endstops>
-        </div>
-        <div class="col-auto pb-2">
-            <Fans></Fans>
         </div>
 
     </div>

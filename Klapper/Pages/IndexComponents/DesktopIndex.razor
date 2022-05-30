@@ -20,15 +20,19 @@
     </div>
     if (Sensors != null)
     {
-        @foreach (var heater in Sensors)
-        {
-            <div style="display:inline-block; padding: 20px">
-                <ProductCard @ref="HeaterComponent" Name=@heater></ProductCard>
-            </div>
-        }
-
         <div class="row pb-2">
-            <TemperatureChart Sensors="HeaterComponents"></TemperatureChart>
+            <div class="col-md-9">
+                <TemperatureChart Sensors="HeaterComponents"></TemperatureChart>
+            </div>
+            <div class="col-md-3">
+                @foreach (var heater in Sensors)
+                {
+                    <div style="display:inline-block">
+                        <ProductCard @ref="HeaterComponent" Name=@heater></ProductCard>
+                    </div>
+                }
+            </div>
+
         </div>
         <div class="row pb-2">
             <FileGrid></FileGrid>
