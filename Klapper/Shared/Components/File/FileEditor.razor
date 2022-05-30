@@ -1,16 +1,7 @@
-<RadzenHtmlEditor @bind-Value="@Content">
-    <RadzenHtmlEditorCustomTool>
-        <Template Context="editor">
-            <button class="btn btn-primary" type="button" style="width: 40px;" @onclick="Save">
-                <span class="oi oi-cloud-upload" aria-hidden="true"></span>
-            </button>
-            <RadzenCheckBox @bind-Value="restartPrinter"  Name="CheckBox1"></RadzenCheckBox>
-            <RadzenLabel Text="Restart Printer" Component="CheckBox1" Style="margin-left: 8px; vertical-align: middle;"/>
-        </Template>
-    </RadzenHtmlEditorCustomTool>
-    <RadzenHtmlEditorUndo/>
-    <RadzenHtmlEditorRedo/>
-</RadzenHtmlEditor>
+<FileSave RestartPrinter="restartPrinter" OnSave="Save"></FileSave>
+<div class="row">
+    <RadzenTextArea Rows="10" @bind-Value="Content" class="w-100"></RadzenTextArea>
+</div>
 
 @code {
 
@@ -25,14 +16,11 @@
 
     protected override async Task OnInitializedAsync()
     {
-        Content = Content.Replace("\n", "<br/>");
         await base.OnInitializedAsync();
     }
 
-    private void Save()
+    private void Save(bool restart)
     {
-        Content = Content.Replace("<br/>", "\n").Replace("<br>", "\n").Replace("&lt;", "<").Replace("&gt;", ">");
-        OnSave(Content, restartPrinter);
+        OnSave(Content, restart);
     }
-
 }

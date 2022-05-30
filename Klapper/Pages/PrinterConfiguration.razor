@@ -18,10 +18,10 @@
     OnDeleteFileDialog="async () => await DeleteFile()"
     RefreshData="async () => await RefreshData()"
     OnUpload="async upload => await UploadFiles(upload, false)"/>
-<div class="row">
+<div class="row pb-4">
     @if (Files?.Count > 0)
     {
-        <RadzenDataGrid AllowFiltering="true" AllowPaging="true" PageSize="8" FilterMode="FilterMode.SimpleWithMenu" AllowSorting="true" Data="@Files" TItem="GCodeFile" RowSelect="SelectGCodeFile">
+        <RadzenDataGrid AllowFiltering="true" AllowPaging="true" PageSize="4" FilterMode="FilterMode.SimpleWithMenu" AllowSorting="true" Data="@Files" TItem="GCodeFile" RowSelect="SelectGCodeFile">
             <Columns>
                 <RadzenDataGridColumn TItem="GCodeFile" Property="path" Title="GCode File Name" Frozen="true" Width="140px"/>
                 <RadzenDataGridColumn TItem="GCodeFile" Property="size" Title="Size" Width="140px">
@@ -39,6 +39,42 @@
     }
 </div>
 
+@if (ConfigurationClass != null)
+{
+    <div class="row pb-2">
+        <div class="col-md-2">
+            <h2>EZ Configurator</h2>
+        </div>
+        <div class="col">
+            <FileSave RestartPrinter="ConfigurationClass.RestartPrinterOnSave" OnSave="UpdateConfiguration"></FileSave>
+        </div>
+    </div>
+
+    <div class="row">
+        @foreach (var section in ConfigurationClass.Sections)
+        {
+            var rows = section.Rows;
+
+            if (rows.Count == 0) continue;
+
+            <h3>Section "@(section.Title)"</h3>
+            <div class="row pb-2">
+                <RadzenDataGrid AllowSorting="true" Data="@rows" TItem="ConfigurationRow">
+                    <Columns>
+                        <RadzenDataGridColumn TItem="ConfigurationRow" Property="Description" Title="Description"/>
+                        <RadzenDataGridColumn TItem="ConfigurationRow" Property="Value" Title="Value">
+                            <Template Context="row">
+                                <RadzenTextArea Value="@row.Value"
+                                                Change="updatedRow => UpdateRow(row, updatedRow)" Class="w-100"/>
+                            </Template>
+                        </RadzenDataGridColumn>
+                    </Columns>
+                </RadzenDataGrid>
+            </div>
+        }
+    </div>
+}
+
 @code {
 
     private List<GCodeFile> Files { get; set; } = new();
@@ -49,9 +85,13 @@
 
     public bool IsUploading { get; set; }
 
+    private Configuration ConfigurationClass { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         await RefreshData();
+        ConfigurationClass = new Configuration(await GetConfiguration("printer.cfg"));
+
         await base.OnInitializedAsync();
     }
 
@@ -87,50 +127,21 @@
         SelectedFile = file;
     }
 
-    /*private async Task ShowStartPrintDialog()
+    private async Task<string> GetConfiguration(string path)
     {
-        var detailedFile = (await Api.GetFileDetails(SelectedFiles.path)).result;
-
-        var result = await DialogService.OpenAsync("Print File", ds =>
-            @<FileDetailsDialog File="@detailedFile"
-                                OnStartPrint="async () => { ds.Close(true); await OnPrintFile(detailedFile);}"
-                                OnCancel="() => ds.Close(false)">
-            </FileDetailsDialog>, new DialogOptions { Width = "50%", Height = "auto" });
+        var detailedFile = await Api.GetFile(path, "config");
+        return Encoding.UTF8.GetString(detailedFile);
     }
-
-    private async Task ShowDeleteFileDialog()
-    {
-        var detailedFile = (await Api.GetFileDetails(SelectedFiles.path)).result;
-
-        var result = await DialogService.OpenAsync("Print File", ds =>
-            @<FileDeleteDialog File="@detailedFile"
-                               OnDelete="async () => { ds.Close(true); await OnDeleteFile(detailedFile);}"
-                               OnCancel="() => ds.Close(false)">
-            </FileDeleteDialog>, new DialogOptions { Width = "50%", Height = "auto" });
-    }*/
-
-    /*private async Task OnPrintFile(GCodeFileDetails file)
-    {
-        try
-        {
-            var result = await Api.PrintFile(file.filename);
-            ToastNotification.Notificate(Toast, result, "Print Started", "Failed to start print");
-        }
-
-        catch (Exception)
-        {
-        }
-    }*/
 
     private async Task ShowEditFileDialog()
     {
-        var detailedFile = await Api.GetFile(SelectedFile.path, "config");
+        var configuration = await GetConfiguration(SelectedFile.path);
         const string root = "config";
 
         var result = await DialogService.OpenAsync("Edit File", ds =>
-            @<FileEditor Content="@Encoding.UTF8.GetString(detailedFile)"
+            @<FileEditor Content="@configuration"
                          OnSave="async (file, restart) => { ds.Close(true); await UploadFiles(Encoding.UTF8.GetBytes(file), SelectedFile.path, root, restart);}">
-            </FileEditor>, new DialogOptions { Width = "50%", Height = "auto" });
+            </FileEditor>, new DialogOptions { Width = "90%", Height = "90%" });
     }
 
     private async Task DeleteFile()
@@ -179,6 +190,18 @@
         var result = await Api.UploadFile(getBytes, fileName, root);
         ToastNotification.Notificate(Toast, result.Item1, $"{fileName} Uploaded", $"Failed to Upload {fileName}, Error: {result.Item2}");
         if (restart) await Api.RunGCode(SpecialGCodeCommands.FirmwareRestart);
+    }
+
+    private void UpdateRow(ConfigurationRow row, string updatedRow)
+    {
+        ConfigurationClass.UpdateConfiguration(row, updatedRow);
+        row.Value = updatedRow;
+        ToastNotification.Notificate(Toast, true, goodMessage: "Config changed successfully! Press the SAVE button to save the configuration");
+    }
+
+    private async void UpdateConfiguration(bool restart)
+    {
+        await UploadFiles(Encoding.UTF8.GetBytes(ConfigurationClass.ConfigurationString), "printer.cfg", "config", restart);
     }
 
 }
