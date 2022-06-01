@@ -73,7 +73,7 @@
                 <h4>Click the "Upload" button to save the configuration or press the "Reset" button to reset the PID Calibrator Tool</h4>
                 <div class="btn-group text-center" role="group">
                     <button type="button" class="btn btn-success" @onclick="async () => await PidService.UpdateConfig(PidService.selectedHeater, Toast)">Upload</button>
-                    <button type="button" class="btn btn-danger" @onclick="PidService.Reset">Reset</button>
+                    <button type="button" class="btn btn-danger" @onclick="Reset">Reset</button>
                 </div>
             </RadzenCard>
         </div>
@@ -82,7 +82,7 @@
 
 @code
 {
-
+    private List<PID> PidList { get; set; } = new();
     protected override async Task OnInitializedAsync()
     {
         var queryList = await PidService.Api.GetObject<MoonrakerQueryResultObject>("heaters", false);
@@ -91,6 +91,8 @@
         {
             PidService.Heaters = queryList.result.status.heaters.available_heaters;
         }
+
+        PidList = PidService.PidList;
 
         await base.OnInitializedAsync();
     }
@@ -101,21 +103,30 @@
         PidService.pidIsCalibrating = true;
         for (var i = 0; i < PidService.numberOfRuns; i++)
         {
-            await InvokeAsync(StateHasChanged);
+            //await InvokeAsync(StateHasChanged);
             var result = await PidService.Api.RunGCode($"PID_CALIBRATE HEATER={PidService.selectedHeater} TARGET={PidService.targetTemperature}");
 
             if (!result.Item1)
             {
                 ToastNotification.Notificate(Toast, false, badMessage: "Operation Timed out before completion! Please increase the NGINX request timeout for this Moonraker Instance!");
-                PidService.Reset();
+                await Reset();
                 await InvokeAsync(StateHasChanged);
                 return;
             }
 
             var storedMessages = (await PidService.Api.GetGCodeStoredMessages("2")).result.gcode_store.Last();
-            PidService.PidList.Add(new PID(storedMessages.message));
-            //await InvokeAsync(StateHasChanged);
+            var pid = new PID(storedMessages.message);
+            PidList.Add(pid);
+            PidService.PidList.Add(pid);
+            await InvokeAsync(StateHasChanged);
         }
         PidService.CalculateMeanPID(PidService.numberOfRuns);
+    }
+
+    private async Task Reset()
+    {
+        PidList.Clear();
+        PidService.Reset();
+        await InvokeAsync(StateHasChanged);
     }
 }
