@@ -59,6 +59,7 @@ public class GCodeFileDetails
 
     public double GetFlow(double speed) //SEVERE WARNING: I understand none of this shit, this is ripped of the internet. If you know a better solution, make a goddamn pull request!
     {
+        if (Extruder == null) return 0;
         return speed * Extruder.nozzle_diameter * layer_height;
     }
 }

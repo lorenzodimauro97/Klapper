@@ -23,7 +23,7 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-md-2 me-2">
+                            <div class="col-md-3 me-2">
                                 <CircularProgressBar ProgressValue="@progress"></CircularProgressBar>
                             </div>
                             @if (StatusService.PrintFileDetails != null && StatusService.GcodeMove != null && StatusService.Toolhead != null)
@@ -47,13 +47,13 @@
                                     <div>
                                         <h6>
                                             Flow Rate:
-                                            <strong>@StatusService.PrintFileDetails.GetFlow((double)(StatusService.GcodeMove?.speed * StatusService.GcodeMove?.speed_factor / 60)).ToString("n3")</strong> mm&#179;/s (estimated)
+                                            <strong>@StatusService.PrintFileDetails.GetFlow((double)(StatusService.GcodeMove?.speed * StatusService.GcodeMove?.speed_factor / 60)).ToString("n1")</strong> mm&#179;/s (estimated)
                                         </h6>
                                     </div>
                                     <div>
                                         <h6>
                                             Speed:
-                                            <strong>@((StatusService.GcodeMove?.speed * StatusService.GcodeMove?.speed_factor / 60).Value.ToString("n3"))</strong> mm/s
+                                            <strong>@((StatusService.GcodeMove?.speed * StatusService.GcodeMove?.speed_factor / 60).Value.ToString("n1"))</strong> mm/s
                                         </h6>
                                     </div>
                                 </div>
@@ -72,18 +72,18 @@
                                     <div class="btn-group" role="group">
                                         @if (StatusService.PrinterStatus.status.print_stats.state is "printing")
                                         {
-                                            <button type="button" class="btn btn-secondary" @onclick="OnPausePrint">Pause</button>
+                                            <button type="button" disabled="@IsAwaitingOperation" class="btn btn-secondary" @onclick="() => {IsAwaitingOperation = true; OnPausePrint(); IsAwaitingOperation = false; }">Pause</button>
                                         }
                                         else
                                         {
-                                            <button type="button" class="btn btn-secondary" @onclick="OnResumePrint">Resume</button>
+                                            <button type="button" disabled="@IsAwaitingOperation" class="btn btn-secondary" @onclick="() => {IsAwaitingOperation = true; OnResumePrint(); IsAwaitingOperation = false; }">Resume</button>
                                         }
-                                        <button type="button" class="btn btn-secondary btn-danger" @onclick="OnCancelPrint">Cancel</button>
+                                        <button type="button" disabled="@IsAwaitingOperation" class="btn btn-secondary btn-danger" @onclick="() => {IsAwaitingOperation = true; OnCancelPrint(); IsAwaitingOperation = false; }">Cancel</button>
                                     </div>
                                 }
                                 @if (StatusService.PrinterStatus.status.print_stats.state is "cancelled")
                                 {
-                                    <button type="button" class="btn btn-secondary" @onclick="OnClearPrint">Clear</button>
+                                    <button type="button" disabled="@IsAwaitingOperation" class="btn btn-secondary" @onclick="OnClearPrint">Clear</button>
                                 }
                             </div>
                         </div>
@@ -109,7 +109,7 @@
     [Parameter]
     public Action OnClearPrint { get; set; }
 
-    private bool DisableCancelButton { get; set; }
+    private bool IsAwaitingOperation { get; set; }
 
     protected override async Task OnInitializedAsync()
     {

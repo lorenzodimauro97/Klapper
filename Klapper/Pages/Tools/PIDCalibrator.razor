@@ -92,7 +92,7 @@
             PidService.Heaters = queryList.result.status.heaters.available_heaters;
         }
 
-        PidList = PidService.PidList;
+        if(PidList.Count == 0) PidList = PidService.PidList;
 
         await base.OnInitializedAsync();
     }
@@ -120,7 +120,7 @@
             PidService.PidList.Add(pid);
             await InvokeAsync(StateHasChanged);
         }
-        PidService.CalculateMeanPID(PidService.numberOfRuns);
+        PidService.CalculateMeanPID();
     }
 
     private async Task Reset()

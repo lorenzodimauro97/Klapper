@@ -22,7 +22,7 @@
             <div class="card-footer text-center">
                 <RadzenSlider @bind-Value="@MovementLength" Step="0.1" TValue="float" Min="0" Max="500" class="w-50"/>
                 @MovementLength mm
-                <RadzenSlider @bind-Value="@MovementFeedRate" Step="10" TValue="float" Min="0" Max="8000" class="w-50"/>
+                <RadzenSlider @bind-Value="@MovementFeedRate" Step="100" TValue="float" Min="0" Max="8000" class="w-50"/>
                 @MovementFeedRate mm/min
             </div>
             <div class="card-body text-center">
@@ -39,7 +39,7 @@
             <div class="card-footer text-center">
                 <RadzenSlider @bind-Value="@ExtrusionDistance" Step="0.1" TValue="float" Min="0" Max="@MaxExtrusion" class="w-50"/>
                 @ExtrusionDistance mm
-                <RadzenSlider @bind-Value="@ExtrusionFeedRate" Step="10" TValue="float" Min="0" Max="8000" class="w-50"/>
+                <RadzenSlider @bind-Value="@ExtrusionFeedRate" Step="100" TValue="float" Min="0" Max="8000" class="w-50"/>
                 @ExtrusionFeedRate mm/min
             </div>
 
@@ -98,11 +98,11 @@
             @if (StatusService.Toolhead != null)
             {
                 <div>
-                    X: <strong>@StatusService.Toolhead.position[0]</strong>
+                    X: <strong>@StatusService.Toolhead.position[0].ToString("n2")</strong>
                     &nbsp;
-                    Y: <strong>@StatusService.Toolhead.position[1]</strong>
+                    Y: <strong>@StatusService.Toolhead.position[1].ToString("n2")</strong>
                     &nbsp;
-                    Z: <strong>@StatusService.Toolhead.position[2]</strong>
+                    Z: <strong>@StatusService.Toolhead.position[2].ToString("n2")</strong>
                 </div>
             }
         </div>

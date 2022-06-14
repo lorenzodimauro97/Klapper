@@ -25,7 +25,7 @@ public class PIDCalibrationService
     public int targetTemperature;
     public int numberOfRuns;
 
-    public void CalculateMeanPID(int numberOfRuns)
+    public void CalculateMeanPID()
     {
         float ki = 0;
         float kp = 0;
@@ -36,9 +36,9 @@ public class PIDCalibrationService
             kp += pid.Kp;
             kd += pid.Kd;
         }
-        ki /= numberOfRuns;
-        kp /= numberOfRuns;
-        kd /= numberOfRuns;
+        ki /= PidList.Count;
+        kp /= PidList.Count;
+        kd /= PidList.Count;
 
         CalibrationResult = new PID
         {
