@@ -41,6 +41,10 @@ public class GCodeFileDetails
 
     public string Base64Image { get; set; }
 
+    public double ExtruderPreviousPosition { get; set; }
+
+    public DateTimeOffset ExtruderPreviousTime;
+
     public string GetEstimatedTime()
     {
         var timespan = TimeSpan.FromSeconds(estimated_time);
@@ -61,6 +65,15 @@ public class GCodeFileDetails
     {
         if (Extruder == null) return 0;
         return speed * Extruder.nozzle_diameter * layer_height;
+    }
+    
+    public double GetExtruderSpeed(double position) //SEVERE WARNING: I understand none of this shit, this is ripped of the internet. If you know a better solution, make a goddamn pull request!
+    {
+        var elapsedTime = (DateTimeOffset.Now - ExtruderPreviousTime).Milliseconds / 1000.0;
+        var speed = (position - ExtruderPreviousPosition) / elapsedTime;
+        ExtruderPreviousPosition = position;
+        ExtruderPreviousTime = DateTimeOffset.Now;
+        return speed;
     }
 }
 

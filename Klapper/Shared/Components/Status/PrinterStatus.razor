@@ -15,83 +15,86 @@
                 </div>
             </div>
         </div> -->
-        <div class="col-auto pb-2">
-            @if (StatusService.PrinterStatus.status.print_stats.state != "standby")
-            {
-                var progress = StatusService.PrinterStatus.status.virtual_sdcard.GetProgress;
+        @if (StatusService.PrinterStatus.status.print_stats.state != "standby")
+        {
+            var progress = StatusService.PrinterStatus.status.virtual_sdcard.GetProgress;
 
-                <div class="card">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-3 me-2">
-                                <CircularProgressBar ProgressValue="@progress"></CircularProgressBar>
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 me-2">
+                            <CircularProgressBar ProgressValue="@progress"></CircularProgressBar>
+                        </div>
+                        @if (StatusService.PrintFileDetails != null && StatusService.GcodeMove != null && StatusService.Toolhead != null)
+                        {
+                            <div class="col-md-6 mt-4">
+                                <h2>@StatusService.PrintFileDetails.filename</h2>
+                                <div>
+                                    <h6>
+                                        Layer
+                                        <strong>@StatusService.PrintFileDetails.GetLayer(StatusService.GcodeMove.gcode_position[2])</strong> of
+                                        <strong>@StatusService.PrintFileDetails.layer_count</strong>
+                                    </h6>
+                                </div>
+                                <div>
+                                    <h6>
+                                        Print time:
+                                        <strong>@StatusService.PrinterStatus.status.print_stats.GetPrintDuration()</strong> Out of
+                                        <strong>@StatusService.PrintFileDetails.GetEstimatedTime()</strong> (estimated)
+                                    </h6>
+                                </div>
+                                <div>
+                                    <h6>
+                                        Flow Rate:
+                                        <strong>@StatusService.PrintFileDetails.GetFlow((double)(StatusService.GcodeMove?.speed * StatusService.GcodeMove?.speed_factor / 60)).ToString("n1")</strong> mm&#179;/s (estimated)
+                                    </h6>
+                                </div>
+                                <div>
+                                    <h6>
+                                        Extruder Speed:
+                                        <strong>@StatusService.PrintFileDetails.GetExtruderSpeed((double)(StatusService.GcodeMove?.position[3])).ToString("n1")</strong> mm6/s
+                                    </h6>
+                                </div>
+                                <div>
+                                    <h6>
+                                        Speed:
+                                        <strong>@((StatusService.GcodeMove?.speed * StatusService.GcodeMove?.speed_factor / 60).Value.ToString("n1"))</strong> mm/s
+                                    </h6>
+                                </div>
                             </div>
-                            @if (StatusService.PrintFileDetails != null && StatusService.GcodeMove != null && StatusService.Toolhead != null)
+                        }
+                        @if (!string.IsNullOrEmpty(StatusService.PrintFileDetails?.Base64Image))
+                        {
+                            <div class="col-md-2 text-center">
+                                <div class="d-flex flex-column flex-lg-row">
+                                    <img src="data:image/bmp;base64, @(StatusService.PrintFileDetails.Base64Image)" alt=""/>
+                                </div>
+                            </div>
+                        }
+                        <div class="col-md-2 mt-2">
+                            @if (StatusService.PrinterStatus.status.print_stats.state is "printing" or "paused")
                             {
-                                <div class="col-md-6 mt-4">
-                                    <h2>@StatusService.PrintFileDetails.filename</h2>
-                                    <div>
-                                        <h6>
-                                            Layer
-                                            <strong>@StatusService.PrintFileDetails.GetLayer(StatusService.GcodeMove.gcode_position[2])</strong> of
-                                            <strong>@StatusService.PrintFileDetails.layer_count</strong>
-                                        </h6>
-                                    </div>
-                                    <div>
-                                        <h6>
-                                            Print time:
-                                            <strong>@StatusService.PrinterStatus.status.print_stats.GetPrintDuration()</strong> Out of
-                                            <strong>@StatusService.PrintFileDetails.GetEstimatedTime()</strong> (estimated)
-                                        </h6>
-                                    </div>
-                                    <div>
-                                        <h6>
-                                            Flow Rate:
-                                            <strong>@StatusService.PrintFileDetails.GetFlow((double)(StatusService.GcodeMove?.speed * StatusService.GcodeMove?.speed_factor / 60)).ToString("n1")</strong> mm&#179;/s (estimated)
-                                        </h6>
-                                    </div>
-                                    <div>
-                                        <h6>
-                                            Speed:
-                                            <strong>@((StatusService.GcodeMove?.speed * StatusService.GcodeMove?.speed_factor / 60).Value.ToString("n1"))</strong> mm/s
-                                        </h6>
-                                    </div>
+                                <div class="btn-group" role="group">
+                                    @if (StatusService.PrinterStatus.status.print_stats.state is "printing")
+                                    {
+                                        <button type="button" disabled="@(IsAwaitingOperation || StatusService.PrinterStatus.status.print_stats.state == "paused")" class="btn btn-secondary" @onclick="async () => { IsAwaitingOperation = true; OnPausePrint(); await Task.Delay(2000); IsAwaitingOperation = false;}">Pause</button>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" disabled="@IsAwaitingOperation" class="btn btn-secondary" @onclick="async () => { IsAwaitingOperation = true; OnResumePrint(); await Task.Delay(2000); IsAwaitingOperation = false;}">Resume</button>
+                                    }
+                                    <button type="button" disabled="@IsAwaitingOperation" class="btn btn-secondary btn-danger" @onclick="async () => { IsAwaitingOperation = true; OnCancelPrint(); await Task.Delay(2000); IsAwaitingOperation = false;}">Cancel</button>
                                 </div>
                             }
-                            @if (!string.IsNullOrEmpty(StatusService.PrintFileDetails?.Base64Image))
+                            @if (StatusService.PrinterStatus.status.print_stats.state is "cancelled" or "complete")
                             {
-                                <div class="col-md-2 text-center">
-                                    <div class="d-flex flex-column flex-lg-row">
-                                        <img src="data:image/bmp;base64, @(StatusService.PrintFileDetails.Base64Image)" alt=""/>
-                                    </div>
-                                </div>
+                                <button type="button" disabled="@IsAwaitingOperation" class="btn btn-secondary" @onclick="async () => { IsAwaitingOperation = true; OnClearPrint(); await Task.Delay(2000); IsAwaitingOperation = false;}">Clear</button>
                             }
-                            <div class="col-md-2 mt-2">
-                                @if (StatusService.PrinterStatus.status.print_stats.state is "printing" or "paused")
-                                {
-                                    <div class="btn-group" role="group">
-                                        @if (StatusService.PrinterStatus.status.print_stats.state is "printing")
-                                        {
-                                            <button type="button" disabled="@IsAwaitingOperation" class="btn btn-secondary" @onclick="() => {IsAwaitingOperation = true; OnPausePrint(); IsAwaitingOperation = false; }">Pause</button>
-                                        }
-                                        else
-                                        {
-                                            <button type="button" disabled="@IsAwaitingOperation" class="btn btn-secondary" @onclick="() => {IsAwaitingOperation = true; OnResumePrint(); IsAwaitingOperation = false; }">Resume</button>
-                                        }
-                                        <button type="button" disabled="@IsAwaitingOperation" class="btn btn-secondary btn-danger" @onclick="() => {IsAwaitingOperation = true; OnCancelPrint(); IsAwaitingOperation = false; }">Cancel</button>
-                                    </div>
-                                }
-                                @if (StatusService.PrinterStatus.status.print_stats.state is "cancelled")
-                                {
-                                    <button type="button" disabled="@IsAwaitingOperation" class="btn btn-secondary" @onclick="OnClearPrint">Clear</button>
-                                }
-                            </div>
                         </div>
                     </div>
                 </div>
-            }
-        </div>
-
+            </div>
+        }
     </div>
 }
 
