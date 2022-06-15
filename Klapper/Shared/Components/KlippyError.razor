@@ -7,8 +7,10 @@
     <div class="alert alert-danger" role="alert">
         <h2>Klippy is in error!</h2>
         <h4>@StatusService.PrinterStatus?.status.webhooks.state_message</h4>
-        <button class="btn btn-success" type="button" @onclick="() => Api.RunGCode(SpecialGCodeCommands.Restart)">
-            Restart
+
+        <button class="btn success" @onclick="async () => await Api.RunGCode(SpecialGCodeCommands.FirmwareRestart)"><span class="oi oi-reload" aria-hidden="true"></span> Firmware</button>
+        <button class="btn success" @onclick="async () => await Api.RunGCode(SpecialGCodeCommands.Restart)">
+            <span class="oi oi-reload" aria-hidden="true"></span> Klipper
         </button>
     </div>
 </div>
