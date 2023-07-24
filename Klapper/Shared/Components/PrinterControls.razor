@@ -17,6 +17,9 @@
                     <button type="button" class="btn btn-secondary" @onclick="() => MovementLength = 20f">20mm</button>
                     <button type="button" class="btn btn-secondary" @onclick="() => MovementLength = 50f">50mm</button>
                     <button type="button" class="btn btn-secondary" @onclick="() => MovementLength = 100f">100mm</button>
+                    <div class="d-flex flex-row flex-wrap justify-content-center pt-2">
+                        <RadzenNumeric @bind-Value="MovementLength"></RadzenNumeric>
+                    </div>
                 </div>
             </div>
             <div class="card-footer text-center">
@@ -34,6 +37,9 @@
                     <button type="button" class="btn btn-secondary" @onclick="() => ExtrusionDistance = 20f">20mm</button>
                     <button type="button" class="btn btn-secondary" @onclick="() => ExtrusionDistance = 50f">50mm</button>
                     <button type="button" class="btn btn-secondary" @onclick="() => ExtrusionDistance = 100f">100mm</button>
+                </div>
+                <div class="d-flex flex-row flex-wrap justify-content-center pt-2">
+                    <RadzenNumeric @bind-Value="ExtrusionDistance"></RadzenNumeric>
                 </div>
             </div>
             <div class="card-footer text-center">
@@ -87,12 +93,12 @@
             </div>
 
             <div class="col-md-1 col-sm-1 align-self-center pb-2">
-            <div style="width: 40px" class="btn-group-vertical d-inline-block me-1 ms-1 text-center" role="group">
-                <button type="button" class="btn btn-secondary" @onclick="() => Move(3, 1)">+</button>
-                <h2>E</h2>
-                <button type="button" class="btn btn-secondary" @onclick="() => Move(3, 0)">-</button>
-            </div>
+                <div style="width: 40px" class="btn-group-vertical d-inline-block me-1 ms-1 text-center" role="group">
+                    <button type="button" class="btn btn-secondary" @onclick="() => Move(3, 1)">+</button>
+                    <h2>E</h2>
+                    <button type="button" class="btn btn-secondary" @onclick="() => Move(3, 0)">-</button>
                 </div>
+            </div>
         </div>
         <div class="row-md-3 text-center justify-content-between">
             @if (StatusService.Toolhead != null)
@@ -119,28 +125,40 @@
                 <div class="row text-center">
                     <div class="d-flex flex-row justify-content-center align-items-center">
                         <h3 style="padding-right: 10px">@Flow%</h3>
-                        <button type="button" class="btn btn-secondary" @onclick="() => ChangeFlow(true)">
+                        <button type="button" class="btn btn-secondary" @onclick="async () => await ChangeFlow(true)">
                             <span class="oi oi-reload" aria-hidden="true"></span>
                         </button>
+                    </div>
+                    <div class="d-flex flex-row flex-wrap justify-content-center pt-2">
+                        <RadzenNumeric @bind-Value="Flow"
+                                       TValue="int?"
+                                       Change="async () => await ChangeFlow(false)">
+                        </RadzenNumeric>
                     </div>
                 </div>
             </div>
             <div class="card-footer text-center">
-                <RadzenSlider @bind-Value="@Flow" Step="1" TValue="int?" Min="0" Max="200" Change="() => ChangeFlow(false)" class="w-75"/>
+                <RadzenSlider @bind-Value="@Flow" Step="1" TValue="int?" Min="0" Max="200" Change="async () => await ChangeFlow(false)" class="w-75"/>
             </div>
             <div class="card-body text-center justify-content-between">
                 <h2 class="card-title text-center">Speed</h2>
                 <div class="row text-center">
                     <div class="d-flex flex-row justify-content-center align-items-center">
                         <h3 style="padding-right: 10px">@Speed%</h3>
-                        <button type="button" class="btn btn-secondary" @onclick="() => ChangeSpeed(true)">
+                        <button type="button" class="btn btn-secondary" @onclick="async () => await ChangeSpeed(true)">
                             <span class="oi oi-reload" aria-hidden="true"></span>
                         </button>
+                    </div>
+                    <div class="d-flex flex-row flex-wrap justify-content-center pt-2">
+                        <RadzenNumeric @bind-Value="Speed"
+                                       TValue="int?"
+                                       Change="async () => await ChangeSpeed(false)">
+                        </RadzenNumeric>
                     </div>
                 </div>
             </div>
             <div class="card-footer text-center">
-                <RadzenSlider @bind-Value="@Speed" Step="1" TValue="int?" Min="0" Max="200" Change="() => ChangeSpeed(false)" class="w-75"/>
+                <RadzenSlider @bind-Value="@Speed" Step="1" TValue="int?" Min="0" Max="200" Change="async () => await ChangeSpeed(false)" class="w-75"/>
             </div>
         </div>
     </div>
@@ -227,7 +245,6 @@
     private async Task Move(int axis, int direction)
     {
         IsMoving = true;
-        if (MovementLength == 0) return;
 
         var command = "G1 ";
 
@@ -246,18 +263,20 @@
                 command += "E";
                 break;
         }
+
+        var length = axis == 3 ? ExtrusionDistance : MovementLength;
+
         switch (direction)
         {
             case 0:
-                command += $"-{MovementLength} ";
+                command += $"-{length} ";
                 break;
             case 1:
-                command += $"{MovementLength} ";
+                command += $"{length} ";
                 break;
         }
 
-        if (axis == 3) command += $"F{ExtrusionFeedRate}";
-        else command += $"F{MovementFeedRate}";
+        command += axis == 3 ? $"F{ExtrusionFeedRate}" : $"F{MovementFeedRate}";
 
         await Api.RunGCode("G91");
 

@@ -15,6 +15,12 @@
         @if (fan != null)
         {
             <RadzenSlider @bind-Value="@fanSpeed" Step="1" TValue="int" Min="0" Max="100" Style="width: 150px" Change="SetFanSpeed"/>
+            <div class="d-flex flex-row flex-wrap justify-content-center pt-2">
+                <RadzenNumeric @bind-Value="fanSpeed"
+                               TValue="int"
+                               Change="async () => await SetFanSpeed()">
+                </RadzenNumeric>
+            </div>
         }
     </div>
 </div>
@@ -24,8 +30,8 @@
     private Fan fan;
     private int fanSpeed
     {
-        get { return (int)(fan.speed * 100); }
-        set { fan.speed = (double)value / 100; }
+        get => (int)(fan.speed * 100);
+        set => fan.speed = (double)value / 100;
     }
 
     protected override async Task OnInitializedAsync()

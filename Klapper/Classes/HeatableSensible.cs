@@ -30,7 +30,7 @@ public class HeatableSensibleTemperatureHistory
 
 public class Temperature
 {
-    public Temperature(HeatableSensible heatableSensible)
+    public Temperature(HeatableSensible? heatableSensible)
     {
         if (heatableSensible == null)
         {

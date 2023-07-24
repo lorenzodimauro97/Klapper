@@ -77,18 +77,18 @@
                                 <div class="btn-group" role="group">
                                     @if (StatusService.PrinterStatus.status.print_stats.state is "printing")
                                     {
-                                        <button type="button" disabled="@(IsAwaitingOperation || StatusService.PrinterStatus.status.print_stats.state == "paused")" class="btn btn-secondary" @onclick="async () => { IsAwaitingOperation = true; OnPausePrint(); await Task.Delay(2000); IsAwaitingOperation = false;}">Pause</button>
+                                        <button type="button" disabled="@(IsAwaitingOperation || StatusService.PrinterStatus.status.print_stats.state == "paused")" class="btn btn-secondary" @onclick="async () => { IsAwaitingOperation = true; await OnPausePrint(); await Task.Delay(2000); IsAwaitingOperation = false;}">Pause</button>
                                     }
                                     else
                                     {
-                                        <button type="button" disabled="@IsAwaitingOperation" class="btn btn-secondary" @onclick="async () => { IsAwaitingOperation = true; OnResumePrint(); await Task.Delay(2000); IsAwaitingOperation = false;}">Resume</button>
+                                        <button type="button" disabled="@IsAwaitingOperation" class="btn btn-secondary" @onclick="async () => { IsAwaitingOperation = true; await OnResumePrint(); await Task.Delay(2000); IsAwaitingOperation = false;}">Resume</button>
                                     }
-                                    <button type="button" disabled="@IsAwaitingOperation" class="btn btn-secondary btn-danger" @onclick="async () => { IsAwaitingOperation = true; OnCancelPrint(); await Task.Delay(2000); IsAwaitingOperation = false;}">Cancel</button>
+                                    <button type="button" disabled="@IsAwaitingOperation" class="btn btn-secondary btn-danger" @onclick="async () => { IsAwaitingOperation = true; await OnCancelPrint(); await Task.Delay(2000); IsAwaitingOperation = false;}">Cancel</button>
                                 </div>
                             }
                             @if (StatusService.PrinterStatus.status.print_stats.state is "cancelled" or "complete")
                             {
-                                <button type="button" disabled="@IsAwaitingOperation" class="btn btn-secondary" @onclick="async () => { IsAwaitingOperation = true; OnClearPrint(); await Task.Delay(2000); IsAwaitingOperation = false;}">Clear</button>
+                                <button type="button" disabled="@IsAwaitingOperation" class="btn btn-secondary" @onclick="async () => { IsAwaitingOperation = true; await OnClearPrint(); await Task.Delay(2000); IsAwaitingOperation = false;}">Clear</button>
                             }
                         </div>
                     </div>
@@ -101,16 +101,16 @@
 @code
 {
     [Parameter]
-    public Action OnPausePrint { get; set; }
+    public Func<Task>? OnPausePrint { get; set; }
 
     [Parameter]
-    public Action OnCancelPrint { get; set; }
+    public Func<Task>? OnCancelPrint { get; set; }
 
     [Parameter]
-    public Action OnResumePrint { get; set; }
+    public Func<Task>? OnResumePrint { get; set; }
 
     [Parameter]
-    public Action OnClearPrint { get; set; }
+    public Func<Task>? OnClearPrint { get; set; }
 
     private bool IsAwaitingOperation { get; set; }
 
@@ -118,12 +118,12 @@
     {
         await StatusService.ForceRefreshAll();
 
-        SetUIRefreshTimer();
+        GetSetUiRefreshTimer();
 
         await base.OnInitializedAsync();
     }
 
-    private void SetUIRefreshTimer()
+    private void GetSetUiRefreshTimer()
     {
         var timer = new Timer(500);
         timer.Elapsed += async (_, _) =>

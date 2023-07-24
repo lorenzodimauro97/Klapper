@@ -71,9 +71,9 @@ else
 @code
 {
 
-    public BrowserInfo Info { get; set; }
+    private BrowserInfo? Info { get; set; }
     private bool _firstInitialization = true;
-    List<string> Heaters { get; set; }
+    List<string>? Heaters { get; set; }
     private readonly List<ProductCard> _heaterComponents = new();
 
     public ProductCard HeaterComponent
@@ -81,7 +81,7 @@ else
         set => _heaterComponents.Add(value);
     }
 
-    List<string> Sensors { get; set; }
+    private List<string>? Sensors { get; set; }
 
     protected override async Task OnInitializedAsync()
     {

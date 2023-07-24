@@ -23,11 +23,12 @@ public class MoonrakerApiService
         BaseUrl = _configuration.GetValue<string>("HostSettings:Address");
         try
         {
-            _client = new RestClient(new RestClientOptions
-            {
-                BaseUrl = new Uri(BaseUrl),
-                MaxTimeout = 900000,
-            });
+            if (BaseUrl != null)
+                _client = new RestClient(new RestClientOptions
+                {
+                    BaseUrl = new Uri(BaseUrl),
+                    MaxTimeout = 900000,
+                });
         }
         catch (Exception ex)
         {
@@ -35,10 +36,10 @@ public class MoonrakerApiService
             Environment.Exit(1);
         }
 
-        _client.UseSerializer<SpanJsonSerializationAdapter>();
+        //_client.UseSerializer<SpanJsonSerializationAdapter>();
     }
 
-    public string BaseUrl { get; }
+    public string? BaseUrl { get; }
     public List<(string, string, string)> Log { get; }
 
     /*public async Task<MoonrakerObjectListClass> GetFullObjectList()
@@ -91,7 +92,7 @@ public class MoonrakerApiService
         return result.IsSuccessful;
     }
 
-    public async Task<GCodeFileRoot> GetFiles(string query)
+    public async Task<GCodeFileRoot?> GetFiles(string query)
     {
         var request = new RestRequest($"/server/files/list?root={query}");
         return await LaunchGetRequest<GCodeFileRoot>(request, false);
@@ -111,48 +112,48 @@ public class MoonrakerApiService
         return result;
     }
 
-    public async Task<GCodeFileDetailsRoot> GetFileDetails(string query)
+    public async Task<GCodeFileDetailsRoot?> GetFileDetails(string query)
     {
         var request = new RestRequest($"/server/files/metadata?filename={query}");
         return await LaunchGetRequest<GCodeFileDetailsRoot>(request, false);
     }
     
-    public async Task<GCodeStoreRoot> GetGCodeStoredMessages(string query)
+    public async Task<GCodeStoreRoot?> GetGCodeStoredMessages(string query)
     {
         var request = new RestRequest($"/server/gcode_store?count={query}");
         return await LaunchGetRequest<GCodeStoreRoot>(request, false);
     }
 
-    public async Task<T> GetObject<T>(string query, bool filter)
+    public async Task<T?> GetObject<T>(string query, bool filter)
     {
         var request = new RestRequest($"/printer/objects/query?{query}");
 
         return await LaunchGetRequest<T>(request, filter, query);
     }
 
-    public async Task<SystemInfo> GetSystemInfo()
+    public async Task<SystemInfo?> GetSystemInfo()
     {
         var request = new RestRequest("/machine/system_info");
         return await LaunchGetRequest<SystemInfo>(request, true, "system_info");
     }
 
-    public async Task<SystemInfoStatus> GetSystemInfoStatus(string query)
+    public async Task<SystemInfoStatus?> GetSystemInfoStatus(string query)
     {
         var request = new RestRequest("/machine/system_info");
         return await LaunchGetRequest<SystemInfoStatus>(request, true, query);
     }
 
-    private async Task<T> LaunchGetRequest<T>(RestRequest request, bool filter, string filterQuery = "")
+    private async Task<T?> LaunchGetRequest<T>(RestRequest request, bool filter, string filterQuery = "")
     {
         var executeRequest = await _client.ExecuteAsync(request);
         var requestResult = executeRequest.Content;
 
-        if (!executeRequest.IsSuccessful) return default;
+        if (!executeRequest.IsSuccessful || string.IsNullOrEmpty(requestResult)) return default;
 
         if (filter)
         {
             var jo = JObject.Parse(requestResult);
-            requestResult = Filter(jo, filterQuery).ToString();
+            requestResult = Filter(jo, filterQuery)?.ToString();
         }
 
         var deserializedClass = JsonSerializer.Deserialize<T>(requestResult);
@@ -179,18 +180,15 @@ public class MoonrakerApiService
         Log.Add(("Client", "Information", string.IsNullOrEmpty(command) ? request.Resource : command));
 
         var result = await _client.ExecuteAsync(request);
-
-        var response = string.Empty;
-
+        
         if (!result.IsSuccessful)
         {
-            if (result.StatusCode == HttpStatusCode.BadRequest)
+            if (result is { StatusCode: HttpStatusCode.BadRequest, Content: not null })
             {
                 var responseClass = JsonSerializer.Deserialize<ErrorRoot>(result.Content);
-                response = GetTracebackMessage(responseClass.error.traceback);
+                var response = GetTracebackMessage(responseClass?.error.traceback);
                 Log.Add(("Server", "Error", response));
                 return (result.IsSuccessful, response);
-
             }
 
             Log.Add(("Server", "Error", $"Server Returned Code {result.StatusCode}"));
@@ -203,7 +201,7 @@ public class MoonrakerApiService
         return (result.IsSuccessful, result.Content);
     }
 
-    private static JToken? Filter(JObject jObject, string filter)
+    private static JToken? Filter(JContainer jObject, string filter)
     {
         return jObject.Descendants()
             .Where(t => t.Type == JTokenType.Property && ((JProperty)t).Name == filter)
@@ -211,19 +209,19 @@ public class MoonrakerApiService
             .FirstOrDefault();
     }
 
-    public async Task<PrinterInfoRoot> GetPrinterInfo()
+    public async Task<PrinterInfoRoot?> GetPrinterInfo()
     {
         var request = new RestRequest("/printer/info");
         return await LaunchGetRequest<PrinterInfoRoot>(request, false);
     }
 
-    public async Task<PrinterStatusRoot> GetPrinterStatus()
+    public async Task<PrinterStatusRoot?> GetPrinterStatus()
     {
         var request = new RestRequest("/printer/objects/query?webhooks&virtual_sdcard&print_stats");
         return await LaunchGetRequest<PrinterStatusRoot>(request, false);
     }
     
-    public async Task<EndstopRoot> GetEndstops()
+    public async Task<EndstopRoot?> GetEndstops()
     {
         var request = new RestRequest("/printer/query_endstops/status");
         return await LaunchGetRequest<EndstopRoot>(request, false);

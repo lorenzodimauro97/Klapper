@@ -48,13 +48,13 @@
 @code
 {
     [Parameter]
-    public List<ProductCard> HeaterComponents { get; set; }
+    public List<ProductCard>? HeaterComponents { get; set; }
 
     public ProductCard HeaterComponent
     {
-        set => HeaterComponents.Add(value);
+        set => HeaterComponents?.Add(value);
     }
 
     [Parameter]
-    public List<string> Sensors { get; set; }
+    public List<string>? Sensors { get; set; }
 }
