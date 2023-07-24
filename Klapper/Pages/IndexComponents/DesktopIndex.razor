@@ -8,29 +8,29 @@
 
 @if (StatusService.KlippyIsReady)
 {
-    <div class="row pb-2">
+    <div class="pb-2">
         <Klapper.Shared.Components.Status.PrinterStatus OnPausePrint="async () => { await Api.PauseCancelResumePrint(0); }"
                                                         OnCancelPrint="async () => { await Api.PauseCancelResumePrint(1); }"
                                                         OnResumePrint="async () => { await Api.PauseCancelResumePrint(2); }"
                                                         OnClearPrint="async () => { await Api.RunGCode(SpecialGCodeCommands.ClearSDCard); }">
         </Klapper.Shared.Components.Status.PrinterStatus>
     </div>
-    <div class="row pb-2">
+    <div class="pb-2">
         <PrinterControls MaxExtrusion="300"></PrinterControls>
     </div>
     if (Sensors != null)
     {
-        <div class="row pb-2">
-            <div class="col-md-9">
-                <TemperatureChart Sensors="HeaterComponents"></TemperatureChart>
-            </div>
-            <div class="col-md-3">
+        <div>
+            <div class="d-flex flex-row">
                 @foreach (var heater in Sensors)
                 {
-                    <div style="display:inline-block">
+                    <div>
                         <ProductCard @ref="HeaterComponent" Name=@heater></ProductCard>
                     </div>
                 }
+            </div>
+            <div>
+                <TemperatureChart Sensors="HeaterComponents"></TemperatureChart>
             </div>
 
         </div>

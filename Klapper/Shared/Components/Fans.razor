@@ -6,17 +6,17 @@
 <div class="card">
     <div class="card-body text-center">
         <h2 class="card-title text-center">Fans</h2>
-        @if (fan != null)
+        @if (Fan != null)
         {
-            <strong>@fanSpeed%</strong>
+            <strong>@FanSpeed%</strong>
         }
     </div>
     <div class="card-footer text-center">
-        @if (fan != null)
+        @if (Fan != null)
         {
-            <RadzenSlider @bind-Value="@fanSpeed" Step="1" TValue="int" Min="0" Max="100" Style="width: 150px" Change="SetFanSpeed"/>
+            <RadzenSlider @bind-Value="@FanSpeed" Step="1" TValue="int" Min="0" Max="100" Style="width: 150px" Change="SetFanSpeed"/>
             <div class="d-flex flex-row flex-wrap justify-content-center pt-2">
-                <RadzenNumeric @bind-Value="fanSpeed"
+                <RadzenNumeric @bind-Value="FanSpeed"
                                TValue="int"
                                Change="async () => await SetFanSpeed()">
                 </RadzenNumeric>
@@ -27,11 +27,11 @@
 
 @code
 {
-    private Fan fan;
-    private int fanSpeed
+    private Fan? Fan { get; set; }
+    private int FanSpeed
     {
-        get => (int)(fan.speed * 100);
-        set => fan.speed = (double)value / 100;
+        get => (int)(Fan.speed * 100);
+        set => Fan.speed = (double)value / 100;
     }
 
     protected override async Task OnInitializedAsync()
@@ -46,7 +46,7 @@
         var result = await Api.GetObject<MoonrakerQueryResultObject>("fan", false);
         if (result != null)
         {
-            fan = result.result.status.fan;
+            Fan = result.result.status.fan;
         }
     }
 
@@ -65,7 +65,7 @@
 
     private async Task SetFanSpeed()
     {
-        await Api.RunGCode($"M106 S{(fanSpeed * 2.55 + 1).ToString(CultureInfo.InvariantCulture)}");
+        await Api.RunGCode($"M106 S{(FanSpeed * 2.55 + 1).ToString(CultureInfo.InvariantCulture)}");
     //fan.speed = fanSpeed * 2.55f / 255;
     }
 }

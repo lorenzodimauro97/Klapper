@@ -5,21 +5,21 @@
 @inject PrinterStatusService StatusService;
 
 
-<div class="justify-content-between mb-2 row">
-    <div class="col-md-4 pb-2">
+<div class="d-flex @(MobileMode ? "flex-column" : "flex-row")">
+    <div class="pb-2">
         <div class="card">
             <div class="card-body text-center">
                 <h2 class="card-title text-center">Move Length</h2>
-                <div class="btn-group d-inline-block" role="group">
+                <div class="btn-group flex-wrap" role="group">
                     <button type="button" class="btn btn-secondary" @onclick="() => MovementLength = 0.1f">0.1mm</button>
                     <button type="button" class="btn btn-secondary" @onclick="() => MovementLength = 1f">1mm</button>
                     <button type="button" class="btn btn-secondary" @onclick="() => MovementLength = 10f">10mm</button>
                     <button type="button" class="btn btn-secondary" @onclick="() => MovementLength = 20f">20mm</button>
                     <button type="button" class="btn btn-secondary" @onclick="() => MovementLength = 50f">50mm</button>
                     <button type="button" class="btn btn-secondary" @onclick="() => MovementLength = 100f">100mm</button>
-                    <div class="d-flex flex-row flex-wrap justify-content-center pt-2">
-                        <RadzenNumeric @bind-Value="MovementLength"></RadzenNumeric>
-                    </div>
+                </div>
+                <div class="d-flex flex-row flex-wrap justify-content-center pt-2">
+                    <RadzenNumeric @bind-Value="MovementLength"></RadzenNumeric>
                 </div>
             </div>
             <div class="card-footer text-center">
@@ -30,7 +30,7 @@
             </div>
             <div class="card-body text-center">
                 <h2 class="card-title text-center">Extrusion Distance</h2>
-                <div class="btn-group d-inline-block" role="group">
+                <div class="btn-group flex-wrap" role="group">
                     <button type="button" class="btn btn-secondary" @onclick="() => ExtrusionDistance = 0.1f">0.1mm</button>
                     <button type="button" class="btn btn-secondary" @onclick="() => ExtrusionDistance = 1f">1mm</button>
                     <button type="button" class="btn btn-secondary" @onclick="() => ExtrusionDistance = 10f">10mm</button>
@@ -51,10 +51,10 @@
 
         </div>
     </div>
-    <div class="col-md-3 text-center pb-2 justify-content-between">
+    <div class="d-flex flex-column pb-2 @(MobileMode ? "justify-content-center" : "justify-content-between w-50")">
 
-        <div class="row justify-content-between">
-            <div class="col-md-1 col-sm-1 align-self-center pb-2">
+        <div class="d-flex flex-row justify-content-between">
+            <div class="align-self-center pb-2">
                 <div style="width: 40px" class="btn-group-vertical d-inline-block me-1 ms-1 text-center" role="group">
                     <button disabled="@IsMoving" type="button" class="btn btn-secondary" @onclick="() => Move(0, 1)">+</button>
                     <button disabled="@IsMoving" type="button" class="btn btn-secondary" @onclick="() => Home(0)">
@@ -63,7 +63,7 @@
                     <button disabled="@IsMoving" type="button" class="btn btn-secondary" @onclick="() => Move(0, 0)">-</button>
                 </div>
             </div>
-            <div class="col-md-1 col-sm-1 align-self-center pb-2">
+            <div class="align-self-center pb-2">
                 <div style="width: 40px" class="btn-group-vertical d-inline-block me-1 ms-1 text-center" role="group">
                     <button disabled="@IsMoving" type="button" class="btn btn-secondary" @onclick="() => Move(1, 1)">+</button>
                     <button disabled="@IsMoving" type="button" class="btn btn-secondary" @onclick="() => Home(1)">
@@ -73,15 +73,13 @@
                 </div>
             </div>
 
-            <div class="col-md-1 col-sm-1 align-self-center pb-2">
-
+            <div class="align-self-center pb-2">
                 <button style="width: 40px" disabled="@IsMoving" type="button" class="btn btn-secondary" @onclick="() => Home(3)">
                     <span class="oi oi-home" aria-hidden="true"></span>
                 </button>
             </div>
 
-            <div class="col-md-1 col-sm-1 align-self-center pb-2">
-
+            <div class="align-self-center pb-2">
                 <div style="width: 40px" class="btn-group-vertical d-inline-block me-1 ms-1 text-center" role="group">
 
                     <button disabled="@IsMoving" type="button" class="btn btn-secondary" @onclick="() => Move(2, 1)">+</button>
@@ -92,15 +90,15 @@
                 </div>
             </div>
 
-            <div class="col-md-1 col-sm-1 align-self-center pb-2">
+            <div class="align-self-center pb-2">
                 <div style="width: 40px" class="btn-group-vertical d-inline-block me-1 ms-1 text-center" role="group">
                     <button type="button" class="btn btn-secondary" @onclick="() => Move(3, 1)">+</button>
-                    <h2>E</h2>
+                    <h2 style="height:62px; margin: 0;">E</h2>
                     <button type="button" class="btn btn-secondary" @onclick="() => Move(3, 0)">-</button>
                 </div>
             </div>
         </div>
-        <div class="row-md-3 text-center justify-content-between">
+        <div class="text-center justify-content-between">
             @if (StatusService.Toolhead != null)
             {
                 <div>
@@ -112,13 +110,13 @@
                 </div>
             }
         </div>
-        <div class="row-md-3 d-flex flex-row text-center justify-content-between">
+        <div class="d-flex flex-column text-center justify-content-between">
             <Endstops></Endstops>
             <Fans></Fans>
         </div>
 
     </div>
-    <div class="col-md-4">
+    <div>
         <div class="card">
             <div class="card-body text-center justify-content-between">
                 <h2 class="card-title text-center">Flow</h2>
@@ -166,6 +164,8 @@
 
 @code
 {
+    [Parameter]
+    public bool MobileMode { get; set; } = false;
     [Parameter]
     public int MaxExtrusion { get; set; }
 
